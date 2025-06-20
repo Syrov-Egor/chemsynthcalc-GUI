@@ -21,6 +21,7 @@ type NumberEdit struct {
 	max      int
 	step     int
 	onChange func(int)
+	disabled bool // Track disabled state
 }
 
 // NewNumberEdit creates a new NumberEdit widget
@@ -31,12 +32,16 @@ func NewNumberEdit(value, min, max, step int, onChange func(int)) *NumberEdit {
 		max:      max,
 		step:     step,
 		onChange: onChange,
+		disabled: false,
 	}
 
 	// Create entry widget
 	n.entry = widget.NewEntry()
 	n.entry.SetText(strconv.Itoa(value))
 	n.entry.OnChanged = func(text string) {
+		if n.disabled {
+			return // Don't process changes when disabled
+		}
 		if val, err := strconv.Atoi(text); err == nil {
 			n.setValue(val)
 		}
@@ -44,13 +49,17 @@ func NewNumberEdit(value, min, max, step int, onChange func(int)) *NumberEdit {
 
 	// Create up button
 	n.upBtn = widget.NewButtonWithIcon("", theme.MoveUpIcon(), func() {
-		n.increment()
+		if !n.disabled {
+			n.increment()
+		}
 	})
 	n.upBtn.Resize(fyne.NewSize(30, 15))
 
 	// Create down button
 	n.downBtn = widget.NewButtonWithIcon("", theme.MoveDownIcon(), func() {
-		n.decrement()
+		if !n.disabled {
+			n.decrement()
+		}
 	})
 	n.downBtn.Resize(fyne.NewSize(30, 15))
 
@@ -81,7 +90,7 @@ func (n *NumberEdit) setValue(value int) {
 	if n.value != value {
 		n.value = value
 		n.entry.SetText(strconv.Itoa(value))
-		if n.onChange != nil {
+		if n.onChange != nil && !n.disabled {
 			n.onChange(value)
 		}
 	}
@@ -89,12 +98,16 @@ func (n *NumberEdit) setValue(value int) {
 
 // increment increases the value by step
 func (n *NumberEdit) increment() {
-	n.setValue(n.value + n.step)
+	if !n.disabled {
+		n.setValue(n.value + n.step)
+	}
 }
 
 // decrement decreases the value by step
 func (n *NumberEdit) decrement() {
-	n.setValue(n.value - n.step)
+	if !n.disabled {
+		n.setValue(n.value - n.step)
+	}
 }
 
 // GetValue returns the current value
@@ -107,14 +120,41 @@ func (n *NumberEdit) SetValue(value int) {
 	n.setValue(value)
 }
 
-// Simple NumberEdit using containers (easier approach)
-func createSimpleNumberEdit(initialValue, min, max, step int, onChange func(int)) *fyne.Container {
+// Enable enables the NumberEdit widget
+func (n *NumberEdit) Enable() {
+	n.disabled = false
+	n.entry.Enable()
+	n.upBtn.Enable()
+	n.downBtn.Enable()
+	n.Refresh() // Refresh the widget to update visual state
+}
+
+// Disable disables the NumberEdit widget
+func (n *NumberEdit) Disable() {
+	n.disabled = true
+	n.entry.Disable()
+	n.upBtn.Disable()
+	n.downBtn.Disable()
+	n.Refresh() // Refresh the widget to update visual state
+}
+
+// Disabled returns whether the widget is currently disabled
+func (n *NumberEdit) Disabled() bool {
+	return n.disabled
+}
+
+// Enhanced simple NumberEdit function with enable/disable support
+func createSimpleNumberEdit(initialValue, min, max, step int, onChange func(int)) (*fyne.Container, func(), func(), func() bool) {
 	currentValue := initialValue
+	disabled := false
 
 	entry := widget.NewEntry()
 	entry.SetText(strconv.Itoa(currentValue))
 
 	updateValue := func(newValue int) {
+		if disabled {
+			return
+		}
 		if newValue < min {
 			newValue = min
 		}
@@ -130,6 +170,9 @@ func createSimpleNumberEdit(initialValue, min, max, step int, onChange func(int)
 
 	// Handle manual entry changes
 	entry.OnChanged = func(text string) {
+		if disabled {
+			return
+		}
 		if val, err := strconv.Atoi(text); err == nil {
 			updateValue(val)
 		}
@@ -137,14 +180,39 @@ func createSimpleNumberEdit(initialValue, min, max, step int, onChange func(int)
 
 	// Create buttons
 	upBtn := widget.NewButtonWithIcon("", theme.MoveUpIcon(), func() {
-		updateValue(currentValue + step)
+		if !disabled {
+			updateValue(currentValue + step)
+		}
 	})
 
 	downBtn := widget.NewButtonWithIcon("", theme.MoveDownIcon(), func() {
-		updateValue(currentValue - step)
+		if !disabled {
+			updateValue(currentValue - step)
+		}
 	})
 
 	// Arrange in a container
 	buttonContainer := container.NewVBox(upBtn, downBtn)
-	return container.NewBorder(nil, nil, nil, buttonContainer, entry)
+	container := container.NewBorder(nil, nil, nil, buttonContainer, entry)
+
+	// Return container and control functions
+	enableFunc := func() {
+		disabled = false
+		entry.Enable()
+		upBtn.Enable()
+		downBtn.Enable()
+	}
+
+	disableFunc := func() {
+		disabled = true
+		entry.Disable()
+		upBtn.Disable()
+		downBtn.Disable()
+	}
+
+	isDisabledFunc := func() bool {
+		return disabled
+	}
+
+	return container, enableFunc, disableFunc, isDisabledFunc
 }

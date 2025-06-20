@@ -32,9 +32,8 @@ func createUI(w fyne.Window) *fyne.Container {
 	w.SetMainMenu(mainMenu)
 
 	name := widget.NewLabelWithStyle("chemsynthcalc v0.1", fyne.TextAlignCenter, widget.RichTextStyleHeading.TextStyle)
-
-	formOrReac := widget.NewRadioGroup([]string{"Formula", "Balance", "Masses"}, changed)
-	formOrReac.SetSelected("Masses")
+	alg := widget.NewSelect([]string{"Auto", "Inv", "GPinv", "PPinv", "Comb"}, changed)
+	alg.SetSelected("Auto")
 	rMode := widget.NewSelect([]string{"Balance", "Check", "Force"}, changed)
 	rMode.SetSelected("Balance")
 	target := NewNumberEdit(0, -1000, 1000, 1, func(i int) {})
@@ -43,6 +42,40 @@ func createUI(w fyne.Window) *fyne.Container {
 	intify.Checked = true
 	precision := NewNumberEdit(4, 0, math.MaxInt, 1, func(i int) {})
 	tolerance := NewNumberEdit(8, 0, math.MaxInt, 1, func(i int) {})
+
+	updateWidgetStates := func(selection string) {
+		switch selection {
+		case "Formula":
+			// For Formula mode: disable balance-specific widgets
+			alg.Enable()
+			rMode.Disable()
+			target.Disable()
+			targetMass.Disable()
+			intify.Enable()
+			precision.Enable()
+			tolerance.Enable()
+
+		case "Balance":
+			// For Balance mode: enable most widgets
+			alg.Enable()
+			rMode.Enable()
+			target.Disable()     // Target usually not needed for balance
+			targetMass.Disable() // Target mass not needed for balance
+			intify.Enable()
+			precision.Enable()
+			tolerance.Enable()
+
+		case "Masses":
+			// For Masses mode: enable mass-related widgets
+			alg.Enable()
+			rMode.Enable()
+			target.Enable()
+			targetMass.Enable()
+			intify.Enable()
+			precision.Enable()
+			tolerance.Enable()
+		}
+	}
 
 	// Create text input
 	textInput := widget.NewEntry()
@@ -58,7 +91,27 @@ func createUI(w fyne.Window) *fyne.Container {
 			println("Sending:", text)
 		}
 	})
-	optionsContainer := container.NewAdaptiveGrid(7, formOrReac, rMode, target, targetMass, intify, precision, tolerance)
+
+	formOrReac := widget.NewRadioGroup([]string{"Formula", "Balance", "Masses"}, func(s string) {
+		fmt.Printf("Selected mode: %s\n", s)
+		updateWidgetStates(s)
+
+		// You can add mode-specific logic here
+		switch s {
+		case "Formula":
+			textInput.SetPlaceHolder("Enter chemical formula: H2SO4")
+		case "Balance":
+			textInput.SetPlaceHolder("Enter equation to balance: H2+O2=H2O")
+		case "Masses":
+			textInput.SetPlaceHolder("Enter equation with masses: H2+O2=H2O")
+		}
+	})
+
+	formOrReac.SetSelected("Masses")
+	// Set initial state based on default selection
+	updateWidgetStates("Masses")
+
+	optionsContainer := container.NewAdaptiveGrid(8, formOrReac, alg, rMode, target, targetMass, intify, precision, tolerance)
 
 	// Create input container with text field and button
 	inputContainer := container.NewBorder(
