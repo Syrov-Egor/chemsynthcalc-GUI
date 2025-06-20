@@ -8,6 +8,8 @@
 *.so
 *.dylib
 
+/fyne-cross/
+chemsynthcalc-GUI
 # Test binary, built with `go test -c`
 *.test
 
