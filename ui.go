@@ -20,7 +20,7 @@ type AppState struct {
 	Algorithm  string
 	RunMode    string
 	Target     int
-	TargetMass int
+	TargetMass float64
 	Intify     bool
 	Precision  int
 	Tolerance  int
@@ -33,7 +33,7 @@ type Widgets struct {
 	Algorithm  *widget.Select
 	RunMode    *widget.Select
 	Target     *NumberEdit
-	TargetMass *NumberEdit
+	TargetMass *FloatEdit
 	Intify     *widget.Check
 	Precision  *NumberEdit
 	Tolerance  *NumberEdit
@@ -52,7 +52,7 @@ func initState() {
 		Algorithm:  "Auto",
 		RunMode:    "Balance",
 		Target:     0,
-		TargetMass: 1,
+		TargetMass: 1.0,
 		Intify:     true,
 		Precision:  4,
 		Tolerance:  8,
@@ -87,7 +87,7 @@ func PrintAppState() {
 	fmt.Printf("  Algorithm: %s\n", appState.Algorithm)
 	fmt.Printf("  RunMode: %s\n", appState.RunMode)
 	fmt.Printf("  Target: %d\n", appState.Target)
-	fmt.Printf("  TargetMass: %d\n", appState.TargetMass)
+	fmt.Printf("  TargetMass: %f\n", appState.TargetMass)
 	fmt.Printf("  Intify: %t\n", appState.Intify)
 	fmt.Printf("  Precision: %d\n", appState.Precision)
 	fmt.Printf("  Tolerance: %d\n", appState.Tolerance)
@@ -190,7 +190,7 @@ func createControlWidgets() {
 		appState.Target = i
 	})
 
-	widgets.TargetMass = NewNumberEdit(appState.TargetMass, 0, math.MaxInt, 1, func(i int) {
+	widgets.TargetMass = NewFloatEdit(1.0, 0, math.MaxInt, 1, 6, func(i float64) {
 		appState.TargetMass = i
 	})
 

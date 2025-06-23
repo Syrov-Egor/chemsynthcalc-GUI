@@ -10,7 +10,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-// NumberEdit is a custom widget that combines an entry with up/down buttons
+// NumberEdit is a custom widget that combines an entry with up/down buttons for integers
 type NumberEdit struct {
 	widget.BaseWidget
 	entry    *widget.Entry
@@ -21,10 +21,10 @@ type NumberEdit struct {
 	max      int
 	step     int
 	onChange func(int)
-	disabled bool // Track disabled state
+	disabled bool
 }
 
-// NewNumberEdit creates a new NumberEdit widget
+// NewNumberEdit creates a new NumberEdit widget for integers
 func NewNumberEdit(value, min, max, step int, onChange func(int)) *NumberEdit {
 	n := &NumberEdit{
 		value:    value,
@@ -35,19 +35,17 @@ func NewNumberEdit(value, min, max, step int, onChange func(int)) *NumberEdit {
 		disabled: false,
 	}
 
-	// Create entry widget
 	n.entry = widget.NewEntry()
 	n.entry.SetText(strconv.Itoa(value))
 	n.entry.OnChanged = func(text string) {
 		if n.disabled {
-			return // Don't process changes when disabled
+			return
 		}
 		if val, err := strconv.Atoi(text); err == nil {
 			n.setValue(val)
 		}
 	}
 
-	// Create up button
 	n.upBtn = widget.NewButtonWithIcon("", theme.MoveUpIcon(), func() {
 		if !n.disabled {
 			n.increment()
@@ -55,7 +53,6 @@ func NewNumberEdit(value, min, max, step int, onChange func(int)) *NumberEdit {
 	})
 	n.upBtn.Resize(fyne.NewSize(30, 15))
 
-	// Create down button
 	n.downBtn = widget.NewButtonWithIcon("", theme.MoveDownIcon(), func() {
 		if !n.disabled {
 			n.decrement()
@@ -67,18 +64,12 @@ func NewNumberEdit(value, min, max, step int, onChange func(int)) *NumberEdit {
 	return n
 }
 
-// CreateRenderer creates the visual representation of the NumberEdit
 func (n *NumberEdit) CreateRenderer() fyne.WidgetRenderer {
-	// Create vertical container for buttons
 	buttonContainer := container.New(layout.NewVBoxLayout(), n.upBtn, n.downBtn)
-
-	// Create horizontal container for entry and buttons
 	content := container.New(layout.NewBorderLayout(nil, nil, nil, buttonContainer), n.entry, buttonContainer)
-
 	return widget.NewSimpleRenderer(content)
 }
 
-// setValue sets the value and updates the entry
 func (n *NumberEdit) setValue(value int) {
 	if value < n.min {
 		value = n.min
@@ -96,123 +87,159 @@ func (n *NumberEdit) setValue(value int) {
 	}
 }
 
-// increment increases the value by step
 func (n *NumberEdit) increment() {
 	if !n.disabled {
 		n.setValue(n.value + n.step)
 	}
 }
 
-// decrement decreases the value by step
 func (n *NumberEdit) decrement() {
 	if !n.disabled {
 		n.setValue(n.value - n.step)
 	}
 }
 
-// GetValue returns the current value
 func (n *NumberEdit) GetValue() int {
 	return n.value
 }
 
-// SetValue sets the value programmatically
 func (n *NumberEdit) SetValue(value int) {
 	n.setValue(value)
 }
 
-// Enable enables the NumberEdit widget
 func (n *NumberEdit) Enable() {
 	n.disabled = false
 	n.entry.Enable()
 	n.upBtn.Enable()
 	n.downBtn.Enable()
-	n.Refresh() // Refresh the widget to update visual state
+	n.Refresh()
 }
 
-// Disable disables the NumberEdit widget
 func (n *NumberEdit) Disable() {
 	n.disabled = true
 	n.entry.Disable()
 	n.upBtn.Disable()
 	n.downBtn.Disable()
-	n.Refresh() // Refresh the widget to update visual state
+	n.Refresh()
 }
 
-// Disabled returns whether the widget is currently disabled
 func (n *NumberEdit) Disabled() bool {
 	return n.disabled
 }
 
-// Enhanced simple NumberEdit function with enable/disable support
-func createSimpleNumberEdit(initialValue, min, max, step int, onChange func(int)) (*fyne.Container, func(), func(), func() bool) {
-	currentValue := initialValue
-	disabled := false
+type FloatEdit struct {
+	widget.BaseWidget
+	entry     *widget.Entry
+	upBtn     *widget.Button
+	downBtn   *widget.Button
+	value     float64
+	min       float64
+	max       float64
+	step      float64
+	precision int
+	onChange  func(float64)
+	disabled  bool
+}
 
-	entry := widget.NewEntry()
-	entry.SetText(strconv.Itoa(currentValue))
+func NewFloatEdit(value, min, max, step float64, precision int, onChange func(float64)) *FloatEdit {
+	f := &FloatEdit{
+		value:     value,
+		min:       min,
+		max:       max,
+		step:      step,
+		precision: precision,
+		onChange:  onChange,
+		disabled:  false,
+	}
 
-	updateValue := func(newValue int) {
-		if disabled {
+	f.entry = widget.NewEntry()
+	f.entry.SetText(strconv.FormatFloat(value, 'f', precision, 64))
+	f.entry.OnChanged = func(text string) {
+		if f.disabled {
 			return
 		}
-		if newValue < min {
-			newValue = min
-		}
-		if newValue > max {
-			newValue = max
-		}
-		currentValue = newValue
-		entry.SetText(strconv.Itoa(currentValue))
-		if onChange != nil {
-			onChange(currentValue)
+		if val, err := strconv.ParseFloat(text, 64); err == nil {
+			f.setValue(val)
 		}
 	}
 
-	// Handle manual entry changes
-	entry.OnChanged = func(text string) {
-		if disabled {
-			return
-		}
-		if val, err := strconv.Atoi(text); err == nil {
-			updateValue(val)
-		}
-	}
-
-	// Create buttons
-	upBtn := widget.NewButtonWithIcon("", theme.MoveUpIcon(), func() {
-		if !disabled {
-			updateValue(currentValue + step)
+	f.upBtn = widget.NewButtonWithIcon("", theme.MoveUpIcon(), func() {
+		if !f.disabled {
+			f.increment()
 		}
 	})
+	f.upBtn.Resize(fyne.NewSize(30, 15))
 
-	downBtn := widget.NewButtonWithIcon("", theme.MoveDownIcon(), func() {
-		if !disabled {
-			updateValue(currentValue - step)
+	f.downBtn = widget.NewButtonWithIcon("", theme.MoveDownIcon(), func() {
+		if !f.disabled {
+			f.decrement()
 		}
 	})
+	f.downBtn.Resize(fyne.NewSize(30, 15))
 
-	// Arrange in a container
-	buttonContainer := container.NewVBox(upBtn, downBtn)
-	container := container.NewBorder(nil, nil, nil, buttonContainer, entry)
+	f.ExtendBaseWidget(f)
+	return f
+}
 
-	// Return container and control functions
-	enableFunc := func() {
-		disabled = false
-		entry.Enable()
-		upBtn.Enable()
-		downBtn.Enable()
+func (f *FloatEdit) CreateRenderer() fyne.WidgetRenderer {
+	buttonContainer := container.New(layout.NewVBoxLayout(), f.upBtn, f.downBtn)
+	content := container.New(layout.NewBorderLayout(nil, nil, nil, buttonContainer), f.entry, buttonContainer)
+	return widget.NewSimpleRenderer(content)
+}
+
+func (f *FloatEdit) setValue(value float64) {
+	if value < f.min {
+		value = f.min
+	}
+	if value > f.max {
+		value = f.max
 	}
 
-	disableFunc := func() {
-		disabled = true
-		entry.Disable()
-		upBtn.Disable()
-		downBtn.Disable()
+	if f.value != value {
+		f.value = value
+		f.entry.SetText(strconv.FormatFloat(value, 'f', f.precision, 64))
+		if f.onChange != nil && !f.disabled {
+			f.onChange(value)
+		}
 	}
+}
 
-	isDisabledFunc := func() bool {
-		return disabled
+func (f *FloatEdit) increment() {
+	if !f.disabled {
+		f.setValue(f.value + f.step)
 	}
+}
 
-	return container, enableFunc, disableFunc, isDisabledFunc
+func (f *FloatEdit) decrement() {
+	if !f.disabled {
+		f.setValue(f.value - f.step)
+	}
+}
+
+func (f *FloatEdit) GetValue() float64 {
+	return f.value
+}
+
+func (f *FloatEdit) SetValue(value float64) {
+	f.setValue(value)
+}
+
+func (f *FloatEdit) Enable() {
+	f.disabled = false
+	f.entry.Enable()
+	f.upBtn.Enable()
+	f.downBtn.Enable()
+	f.Refresh()
+}
+
+func (f *FloatEdit) Disable() {
+	f.disabled = true
+	f.entry.Disable()
+	f.upBtn.Disable()
+	f.downBtn.Disable()
+	f.Refresh()
+}
+
+func (f *FloatEdit) Disabled() bool {
+	return f.disabled
 }
