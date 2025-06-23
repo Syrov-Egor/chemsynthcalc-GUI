@@ -239,14 +239,14 @@ func createUI(w fyne.Window) *fyne.Container {
 	updateWidgetStates(appState.Mode)
 
 	optionsContainer := container.NewAdaptiveGrid(8,
-		widgets.FormOrReac,
-		widgets.Algorithm,
-		widgets.RunMode,
-		widgets.Target,
-		widgets.TargetMass,
-		widgets.Intify,
-		widgets.Precision,
-		widgets.Tolerance,
+		container.NewVBox(widget.NewLabelWithStyle("Mode", fyne.TextAlignCenter, widget.RichTextStyleStrong.TextStyle), widgets.FormOrReac),
+		container.NewVBox(widget.NewLabelWithStyle("Algorithm", fyne.TextAlignCenter, widget.RichTextStyleStrong.TextStyle), widgets.Algorithm),
+		container.NewVBox(widget.NewLabelWithStyle("Run mode", fyne.TextAlignCenter, widget.RichTextStyleStrong.TextStyle), widgets.RunMode),
+		container.NewVBox(widget.NewLabelWithStyle("Target #", fyne.TextAlignCenter, widget.RichTextStyleStrong.TextStyle), widgets.Target),
+		container.NewVBox(widget.NewLabelWithStyle("Target mass, g", fyne.TextAlignCenter, widget.RichTextStyleStrong.TextStyle), widgets.TargetMass),
+		container.NewVBox(widget.NewLabelWithStyle("Intify coefs", fyne.TextAlignCenter, widget.RichTextStyleStrong.TextStyle), widgets.Intify),
+		container.NewVBox(widget.NewLabelWithStyle("Output precision", fyne.TextAlignCenter, widget.RichTextStyleStrong.TextStyle), widgets.Precision),
+		container.NewVBox(widget.NewLabelWithStyle("Float tolerance, 1e-x", fyne.TextAlignCenter, widget.RichTextStyleStrong.TextStyle), widgets.Tolerance),
 	)
 
 	inputContainer := container.NewBorder(
