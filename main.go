@@ -5,10 +5,15 @@ import (
 	"fyne.io/fyne/v2/app"
 )
 
+const (
+	width  float32 = 800
+	height float32 = 600
+)
+
 func main() {
 	csc := app.New()
 	w := csc.NewWindow("chemsynthcalc")
-	w.Resize(fyne.NewSize(800, 600))
+	w.Resize(fyne.NewSize(width, height))
 
 	content := createUI(w)
 
