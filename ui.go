@@ -10,139 +10,255 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func createUI(w fyne.Window) *fyne.Container {
+type EnableDisableWidget interface {
+	Enable()
+	Disable()
+}
+
+type AppState struct {
+	Mode       string
+	Algorithm  string
+	RunMode    string
+	Target     int
+	TargetMass int
+	Intify     bool
+	Precision  int
+	Tolerance  int
+	InputText  string
+}
+
+type Widgets struct {
+	Name       *widget.Label
+	FormOrReac *widget.RadioGroup
+	Algorithm  *widget.Select
+	RunMode    *widget.Select
+	Target     *NumberEdit
+	TargetMass *NumberEdit
+	Intify     *widget.Check
+	Precision  *NumberEdit
+	Tolerance  *NumberEdit
+	TextInput  *widget.Entry
+	SendButton *widget.Button
+}
+
+var (
+	appState *AppState
+	widgets  *Widgets
+)
+
+func initState() {
+	appState = &AppState{
+		Mode:       "Masses",
+		Algorithm:  "Auto",
+		RunMode:    "Balance",
+		Target:     0,
+		TargetMass: 1,
+		Intify:     true,
+		Precision:  4,
+		Tolerance:  8,
+		InputText:  "",
+	}
+}
+
+func GetAppState() AppState {
+	return *appState
+}
+
+func UpdateAppState() {
+	if widgets == nil {
+		return
+	}
+
+	appState.Mode = widgets.FormOrReac.Selected
+	appState.Algorithm = widgets.Algorithm.Selected
+	appState.RunMode = widgets.RunMode.Selected
+	appState.Target = widgets.Target.GetValue()
+	appState.TargetMass = widgets.TargetMass.GetValue()
+	appState.Intify = widgets.Intify.Checked
+	appState.Precision = widgets.Precision.GetValue()
+	appState.Tolerance = widgets.Tolerance.GetValue()
+	appState.InputText = widgets.TextInput.Text
+}
+
+func PrintAppState() {
+	UpdateAppState()
+	fmt.Printf("Current App State:\n")
+	fmt.Printf("  Mode: %s\n", appState.Mode)
+	fmt.Printf("  Algorithm: %s\n", appState.Algorithm)
+	fmt.Printf("  RunMode: %s\n", appState.RunMode)
+	fmt.Printf("  Target: %d\n", appState.Target)
+	fmt.Printf("  TargetMass: %d\n", appState.TargetMass)
+	fmt.Printf("  Intify: %t\n", appState.Intify)
+	fmt.Printf("  Precision: %d\n", appState.Precision)
+	fmt.Printf("  Tolerance: %d\n", appState.Tolerance)
+	fmt.Printf("  InputText: %s\n", appState.InputText)
+	fmt.Printf("------------------------\n")
+}
+
+func setWidgetStates(enable bool, widgets ...EnableDisableWidget) {
+	for _, w := range widgets {
+		if enable {
+			w.Enable()
+		} else {
+			w.Disable()
+		}
+	}
+}
+
+func updateWidgetStates(selection string) {
+	if widgets == nil {
+		return
+	}
+
+	appState.Mode = selection
+
+	switch selection {
+	case "Formula":
+		setWidgetStates(true, widgets.Precision)
+		setWidgetStates(false, widgets.Algorithm, widgets.RunMode, widgets.Target, widgets.TargetMass, widgets.Intify, widgets.Tolerance)
+	case "Balance":
+		setWidgetStates(true, widgets.Algorithm)
+		setWidgetStates(false, widgets.RunMode, widgets.Target, widgets.TargetMass, widgets.Intify, widgets.Tolerance)
+	case "Masses":
+		setWidgetStates(true, widgets.RunMode, widgets.Target, widgets.TargetMass, widgets.Intify, widgets.Tolerance)
+		setWidgetStates(false, widgets.Algorithm)
+	}
+
+	updatePlaceholderText(selection)
+}
+
+func updatePlaceholderText(selection string) {
+	if widgets == nil || widgets.TextInput == nil {
+		return
+	}
+
+	switch selection {
+	case "Formula":
+		widgets.TextInput.SetPlaceHolder("Enter chemical formula: H2SO4")
+	case "Balance":
+		widgets.TextInput.SetPlaceHolder("Enter equation to balance: H2+O2=H2O")
+	case "Masses":
+		widgets.TextInput.SetPlaceHolder("Enter equation with masses: H2+O2=H2O")
+	}
+}
+
+func handleRunAction() {
+	UpdateAppState()
+	PrintAppState()
+
+	text := appState.InputText
+	if text != "" {
+		fmt.Printf("Processing in %s mode: %s\n", appState.Mode, text)
+	}
+}
+
+func createMenu() *fyne.MainMenu {
 	fileMenu := fyne.NewMenu("File",
 		fyne.NewMenuItem("Save", func() {
-			// Handle save file action
+			UpdateAppState()
+			fmt.Println("Save action - current state captured")
 		}),
 		fyne.NewMenuItemSeparator(),
 	)
 
 	helpMenu := fyne.NewMenu("Help",
 		fyne.NewMenuItem("About", func() {
-			// Handle about action
+			fmt.Println("About ChemSynthCalc v0.1")
 		}),
 		fyne.NewMenuItem("How to use", func() {
-			// Handle how to use action
+			fmt.Println("How to use ChemSynthCalc")
 		}),
 	)
 
-	mainMenu := fyne.NewMainMenu(fileMenu, helpMenu)
-	w.SetMainMenu(mainMenu)
+	return fyne.NewMainMenu(fileMenu, helpMenu)
+}
 
-	name := widget.NewLabelWithStyle("chemsynthcalc v0.1", fyne.TextAlignCenter, widget.RichTextStyleHeading.TextStyle)
-	alg := widget.NewSelect([]string{"Auto", "Inv", "GPinv", "PPinv", "Comb"}, func(s string) {})
-	alg.SetSelected("Auto")
-	rMode := widget.NewSelect([]string{"Balance", "Check", "Force"}, func(s string) {})
-	rMode.SetSelected("Balance")
-	target := NewNumberEdit(0, -1000, 1000, 1, func(i int) {})
-	targetMass := NewNumberEdit(1, 0, math.MaxInt, 1, func(i int) {})
-	intify := widget.NewCheck("Intify?", func(b bool) {})
-	intify.Checked = true
-	precision := NewNumberEdit(4, 0, math.MaxInt, 1, func(i int) {})
-	tolerance := NewNumberEdit(8, 0, math.MaxInt, 1, func(i int) {})
+func createControlWidgets() {
+	widgets.Name = widget.NewLabelWithStyle("chemsynthcalc v0.1", fyne.TextAlignCenter, widget.RichTextStyleHeading.TextStyle)
 
-	updateWidgetStates := func(selection string) {
-		switch selection {
-		case "Formula":
-			// For Formula mode: disable balance-specific widgets
-			alg.Enable()
-			rMode.Disable()
-			target.Disable()
-			targetMass.Disable()
-			intify.Enable()
-			precision.Enable()
-			tolerance.Enable()
+	widgets.Algorithm = widget.NewSelect([]string{"Auto", "Inv", "GPinv", "PPinv", "Comb"}, func(s string) {
+		appState.Algorithm = s
+	})
+	widgets.Algorithm.SetSelected(appState.Algorithm)
 
-		case "Balance":
-			// For Balance mode: enable most widgets
-			alg.Enable()
-			rMode.Enable()
-			target.Disable()     // Target usually not needed for balance
-			targetMass.Disable() // Target mass not needed for balance
-			intify.Enable()
-			precision.Enable()
-			tolerance.Enable()
+	widgets.RunMode = widget.NewSelect([]string{"Balance", "Check", "Force"}, func(s string) {
+		appState.RunMode = s
+	})
+	widgets.RunMode.SetSelected(appState.RunMode)
 
-		case "Masses":
-			// For Masses mode: enable mass-related widgets
-			alg.Enable()
-			rMode.Enable()
-			target.Enable()
-			targetMass.Enable()
-			intify.Enable()
-			precision.Enable()
-			tolerance.Enable()
-		}
+	widgets.Target = NewNumberEdit(appState.Target, -1000, 1000, 1, func(i int) {
+		appState.Target = i
+	})
+
+	widgets.TargetMass = NewNumberEdit(appState.TargetMass, 0, math.MaxInt, 1, func(i int) {
+		appState.TargetMass = i
+	})
+
+	widgets.Intify = widget.NewCheck("Intify?", func(b bool) {
+		appState.Intify = b
+	})
+	widgets.Intify.Checked = appState.Intify
+
+	widgets.Precision = NewNumberEdit(appState.Precision, 0, math.MaxInt, 1, func(i int) {
+		appState.Precision = i
+	})
+
+	widgets.Tolerance = NewNumberEdit(appState.Tolerance, 0, math.MaxInt, 1, func(i int) {
+		appState.Tolerance = i
+	})
+}
+
+func createTextInputWidgets() {
+	widgets.TextInput = widget.NewEntry()
+	widgets.TextInput.MultiLine = true
+	widgets.TextInput.OnChanged = func(text string) {
+		appState.InputText = text
 	}
 
-	// Create text input
-	textInput := widget.NewEntry()
-	textInput.SetPlaceHolder("H2+O2=H2O")
-	textInput.MultiLine = true
+	widgets.SendButton = widget.NewButtonWithIcon("Run", theme.MediaPlayIcon(), handleRunAction)
+}
 
-	// Create send button with triangle icon
-	sendButton := widget.NewButtonWithIcon("Run", theme.MediaPlayIcon(), func() {
-		// Handle send action
-		text := textInput.Text
-		if text != "" {
-			// You can process the text here
-			println("Sending:", text)
-		}
-	})
-
-	formOrReac := widget.NewRadioGroup([]string{"Formula", "Balance", "Masses"}, func(s string) {
+func createModeWidget() {
+	widgets.FormOrReac = widget.NewRadioGroup([]string{"Formula", "Balance", "Masses"}, func(s string) {
 		fmt.Printf("Selected mode: %s\n", s)
 		updateWidgetStates(s)
-
-		// You can add mode-specific logic here
-		switch s {
-		case "Formula":
-			textInput.SetPlaceHolder("Enter chemical formula: H2SO4")
-		case "Balance":
-			textInput.SetPlaceHolder("Enter equation to balance: H2+O2=H2O")
-		case "Masses":
-			textInput.SetPlaceHolder("Enter equation with masses: H2+O2=H2O")
-		}
 	})
+	widgets.FormOrReac.SetSelected(appState.Mode)
+}
 
-	formOrReac.SetSelected("Masses")
-	// Set initial state based on default selection
-	updateWidgetStates("Masses")
+func createUI(w fyne.Window) *fyne.Container {
+	initState()
+	widgets = &Widgets{}
 
-	optionsContainer := container.NewAdaptiveGrid(8, formOrReac, alg, rMode, target, targetMass, intify, precision, tolerance)
+	w.SetMainMenu(createMenu())
 
-	// Create input container with text field and button
-	inputContainer := container.NewBorder(
-		nil, nil, nil, sendButton,
-		textInput,
+	createControlWidgets()
+	createTextInputWidgets()
+	createModeWidget()
+
+	updateWidgetStates(appState.Mode)
+
+	optionsContainer := container.NewAdaptiveGrid(8,
+		widgets.FormOrReac,
+		widgets.Algorithm,
+		widgets.RunMode,
+		widgets.Target,
+		widgets.TargetMass,
+		widgets.Intify,
+		widgets.Precision,
+		widgets.Tolerance,
 	)
 
-	// Create main content container
+	inputContainer := container.NewBorder(
+		nil, nil, nil, widgets.SendButton,
+		widgets.TextInput,
+	)
+
 	content := container.NewVBox(
-		name,
+		widgets.Name,
 		optionsContainer,
 		inputContainer,
 	)
+
 	return content
-}
-
-type uiWidget interface {
-	*widget.Label |
-		*widget.Select |
-		*NumberEdit |
-		*widget.Check
-}
-
-func enableDisableWidgets[U uiWidget](enable bool, widgets ...U) {
-	if enable {
-		for _, w := range widgets {
-			w.Enable()
-		}
-	} else {
-		for _, w := range widgets {
-			w.Disable()
-		}
-	}
-
 }
