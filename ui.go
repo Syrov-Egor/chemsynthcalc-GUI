@@ -146,10 +146,17 @@ func handleRunAction() {
 	UpdateAppState()
 	PrintAppState()
 
-	text := appState.InputText
-	if text != "" {
-		fmt.Printf("Processing in %s mode: %s\n", appState.Mode, text)
+	switch appState.Mode {
+	case "Formula":
+		calcFormulaMode()
+	case "Balance":
+		calcBalanceMode()
+	case "Masses":
+		calcMassesMode()
+	default:
+		fmt.Println("err")
 	}
+
 }
 
 func createMenu() *fyne.MainMenu {
