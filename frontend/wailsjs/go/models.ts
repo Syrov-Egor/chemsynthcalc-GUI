@@ -31,10 +31,6 @@ export namespace main {
 	export class CalculationResult {
 	    success: boolean;
 	    message: string;
-	    balancedEquation: string;
-	    molecularWeights: Record<string, number>;
-	    massCalculations: Record<string, number>;
-	    coefficients: number[];
 	    details: string;
 	
 	    static createFrom(source: any = {}) {
@@ -45,10 +41,6 @@ export namespace main {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.success = source["success"];
 	        this.message = source["message"];
-	        this.balancedEquation = source["balancedEquation"];
-	        this.molecularWeights = source["molecularWeights"];
-	        this.massCalculations = source["massCalculations"];
-	        this.coefficients = source["coefficients"];
 	        this.details = source["details"];
 	    }
 	}

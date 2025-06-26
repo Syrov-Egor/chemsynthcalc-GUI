@@ -1,8 +1,12 @@
 module chemsynthcalc
 
-go 1.23
+go 1.23.0
+
+toolchain go1.24.4
 
 require github.com/wailsapp/wails/v2 v2.10.1
+
+require github.com/Syrov-Egor/gosynthcalc v0.1.4
 
 require (
 	github.com/bep/debounce v1.2.1 // indirect
@@ -30,7 +34,8 @@ require (
 	golang.org/x/crypto v0.33.0 // indirect
 	golang.org/x/net v0.35.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
-	golang.org/x/text v0.22.0 // indirect
+	golang.org/x/text v0.23.0 // indirect
+	gonum.org/v1/gonum v0.16.0 // indirect
 )
 
 // replace github.com/wailsapp/wails/v2 v2.10.1 => /home/egor/go/pkg/mod

@@ -39,10 +39,10 @@ document.querySelector('#app').innerHTML = `
                 <div class="control-label">Algorithm</div>
                 <select class="select-field" id="algorithm">
                     <option value="auto">Auto</option>
-                    <option value="gauss">Inv</option>
-                    <option value="matrix">GPinv</option>
-                    <option value="matrix">PPinv</option>
-                    <option value="matrix">Comb</option>
+                    <option value="inv">Inv</option>
+                    <option value="gpinv">GPinv</option>
+                    <option value="ppinv">PPinv</option>
+                    <option value="comb">Comb</option>
                 </select>
             </div>
 
