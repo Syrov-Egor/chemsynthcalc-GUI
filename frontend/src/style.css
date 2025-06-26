@@ -1,26 +1,235 @@
-html {
-    background-color: rgba(27, 38, 54, 1);
-    text-align: center;
-    color: white;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-    margin: 0;
-    color: white;
-    font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
-    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #2b2b2b;
+    color: #ffffff;
+    font-size: 16px;
+    overflow-x: hidden;
 }
 
-@font-face {
-    font-family: "Nunito";
-    font-style: normal;
-    font-weight: 400;
-    src: local(""),
-    url("assets/fonts/nunito-v16-latin-regular.woff2") format("woff2");
-}
-
-#app {
+.app-container {
+    display: flex;
+    flex-direction: column;
     height: 100vh;
+    width: 100vw;
+}
+
+.menu-bar {
+    background-color: #3c3c3c;
+    padding: 8px 16px;
+    border-bottom: 1px solid #4a4a4a;
+    display: flex;
+    gap: 20px;
+    -webkit-app-region: drag;
+}
+
+.menu-item {
+    color: #ffffff;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    -webkit-app-region: no-drag;
+}
+
+.menu-item:hover {
+    background-color: #4a4a4a;
+}
+
+.title-bar {
     text-align: center;
+    padding: 16px;
+    font-size: 18px;
+    font-weight: 600;
+    background-color: #2b2b2b;
+}
+
+.controls-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 16px;
+    padding: 20px;
+    background-color: #2b2b2b;
+    border-bottom: 1px solid #4a4a4a;
+}
+
+.controls-grid.single-column {
+    grid-template-columns: 1fr;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.control-label {
+    font-size: 12px;
+    color: #cccccc;
+    font-weight: 500;
+}
+
+.input-field {
+    background-color: #404040;
+    border: 1px solid #555555;
+    color: #ffffff;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    min-width: 60px;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: #0078d4;
+    background-color: #454545;
+}
+
+.select-field {
+    background-color: #404040;
+    border: 1px solid #555555;
+    color: #ffffff;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.select-field:focus {
+    outline: none;
+    border-color: #0078d4;
+}
+
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.radio-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.radio-input {
+    accent-color: #0078d4;
+}
+
+.radio-label {
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.checkbox-input {
+    accent-color: #0078d4;
+}
+
+.checkbox-label {
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.increment-control {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.increment-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.increment-btn {
+    background-color: #404040;
+    border: 1px solid #555555;
+    color: #ffffff;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    border-radius: 2px;
+}
+
+.increment-btn:hover {
+    background-color: #4a4a4a;
+}
+
+.equation-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #1e1e1e;
+}
+
+.equation-input-bar {
+    padding: 16px 20px;
+    border-bottom: 1px solid #4a4a4a;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.equation-input {
+    flex: 1;
+    background-color: #2b2b2b;
+    border: 1px solid #555555;
+    color: #ffffff;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: 'Courier New', monospace;
+}
+
+.equation-input:focus {
+    outline: none;
+    border-color: #0078d4;
+}
+
+.run-button {
+    background-color: #0078d4;
+    border: none;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.run-button:hover {
+    background-color: #106ebe;
+}
+
+.results-area {
+    flex: 1;
+    padding: 20px;
+    background-color: #1e1e1e;
+    overflow-y: auto;
+}
+
+.results-content {
+    color: #cccccc;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.4;
+    white-space: pre-wrap;
 }

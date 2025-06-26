@@ -1,54 +1,143 @@
-#logo {
-    display: block;
-    width: 50%;
-    height: 50%;
-    margin: auto;
-    padding: 10% 0 0;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: 100% 100%;
-    background-origin: content-box;
+/* Additional styles specific to the chemistry calculator */
+
+/* Custom scrollbar for results area */
+.results-area::-webkit-scrollbar {
+    width: 8px;
 }
 
-.result {
-    height: 20px;
-    line-height: 20px;
-    margin: 1.5rem auto;
+.results-area::-webkit-scrollbar-track {
+    background: #2b2b2b;
 }
 
-.input-box .btn {
-    width: 60px;
-    height: 30px;
-    line-height: 30px;
-    border-radius: 3px;
-    border: none;
-    margin: 0 0 0 20px;
-    padding: 0 8px;
-    cursor: pointer;
+.results-area::-webkit-scrollbar-thumb {
+    background: #555555;
+    border-radius: 4px;
 }
 
-.input-box .btn:hover {
-    background-image: linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%);
-    color: #333333;
+.results-area::-webkit-scrollbar-thumb:hover {
+    background: #666666;
 }
 
-.input-box .input {
-    border: none;
-    border-radius: 3px;
-    outline: none;
-    height: 30px;
-    line-height: 30px;
-    padding: 0 10px;
-    background-color: rgba(240, 240, 240, 1);
-    -webkit-font-smoothing: antialiased;
+/* Enhanced button interactions */
+.run-button:active {
+    transform: translateY(1px);
+    background-color: #005a9e;
 }
 
-.input-box .input:hover {
-    border: none;
-    background-color: rgba(255, 255, 255, 1);
+.increment-btn:active {
+    transform: scale(0.95);
 }
 
-.input-box .input:focus {
-    border: none;
-    background-color: rgba(255, 255, 255, 1);
+/* Input field animations */
+.input-field, .select-field, .equation-input {
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+/* Radio button and checkbox custom styling */
+.radio-input:checked + .radio-label {
+    color: #0078d4;
+    font-weight: 500;
+}
+
+.checkbox-input:checked + .checkbox-label {
+    color: #0078d4;
+    font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .controls-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        padding: 16px;
+    }
+}
+
+@media (max-width: 800px) {
+    .controls-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        padding: 12px;
+    }
+    
+    .equation-input-bar {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+    
+    .equation-input-bar > span {
+        text-align: center;
+    }
+}
+
+/* Loading state for results */
+.results-content.loading {
+    opacity: 0.7;
+}
+
+/* Error state styling */
+.results-content.error {
+    color: #ff6b6b;
+}
+
+/* Success state styling */
+.results-content.success {
+    color: #51cf66;
+}
+
+/* Highlight for active mode */
+.radio-item:has(.radio-input:checked) {
+    background-color: rgba(0, 120, 212, 0.1);
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+/* Subtle animations */
+.control-group {
+    transition: opacity 0.2s ease;
+}
+
+.control-group:hover {
+    opacity: 1;
+}
+
+/* Focus indicators */
+.input-field:focus,
+.select-field:focus,
+.equation-input:focus {
+    box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.3);
+}
+
+/* Menu bar improvements */
+.menu-bar {
+    user-select: none;
+}
+
+.menu-item {
+    transition: background-color 0.2s ease;
+}
+
+/* Title bar styling */
+.title-bar {
+    background: linear-gradient(135deg, #2b2b2b 0%, #3c3c3c 100%);
+    border-bottom: 1px solid #4a4a4a;
+}
+
+/* Results area improvements */
+.results-content {
+    padding: 8px;
+    background-color: rgba(64, 64, 64, 0.3);
+    border-radius: 4px;
+    border: 1px solid #404040;
+}
+
+/* Equation input bar enhancements */
+.equation-input-bar {
+    background: linear-gradient(135deg, #2b2b2b 0%, #323232 100%);
+}
+
+/* Control grid enhancements */
+.controls-grid {
+    background: linear-gradient(135deg, #2b2b2b 0%, #363636 100%);
 }
