@@ -1,143 +1,222 @@
-/* Additional styles specific to the chemistry calculator */
+/* Modern ChemSynthCalc Styles - Complementing Flowbite/Tailwind */
 
-/* Custom scrollbar for results area */
-.results-area::-webkit-scrollbar {
+/* Custom scrollbar styling for results area */
+#results::-webkit-scrollbar {
     width: 8px;
 }
 
-.results-area::-webkit-scrollbar-track {
-    background: #2b2b2b;
-}
-
-.results-area::-webkit-scrollbar-thumb {
-    background: #555555;
+#results::-webkit-scrollbar-track {
+    background: #374151; /* gray-700 */
     border-radius: 4px;
 }
 
-.results-area::-webkit-scrollbar-thumb:hover {
-    background: #666666;
+#results::-webkit-scrollbar-thumb {
+    background: #6b7280; /* gray-500 */
+    border-radius: 4px;
 }
 
-/* Enhanced button interactions */
-.run-button:active {
-    transform: translateY(1px);
-    background-color: #005a9e;
+#results::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af; /* gray-400 */
 }
 
-.increment-btn:active {
-    transform: scale(0.95);
+/* Enhanced focus rings for better accessibility */
+input:focus,
+select:focus,
+button:focus {
+    outline: 2px solid #3b82f6 !important;
+    outline-offset: 2px;
 }
 
-/* Input field animations */
-.input-field, .select-field, .equation-input {
-    transition: border-color 0.2s ease, background-color 0.2s ease;
+/* Smooth transitions for interactive elements */
+input,
+select,
+button {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Radio button and checkbox custom styling */
-.radio-input:checked + .radio-label {
-    color: #0078d4;
-    font-weight: 500;
+/* Enhanced hover effects */
+button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
 }
 
-.checkbox-input:checked + .checkbox-label {
-    color: #0078d4;
-    font-weight: 500;
+/* Active state for buttons */
+button:active:not(:disabled) {
+    transform: translateY(0);
 }
 
-/* Responsive adjustments */
-@media (max-width: 1200px) {
-    .controls-grid {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 12px;
-        padding: 16px;
+/* Material-like elevation for cards */
+.bg-gray-800 {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Improved radio button styling */
+input[type="radio"]:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+/* Improved checkbox styling */
+input[type="checkbox"]:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+/* Enhanced input field styling */
+input[type="text"],
+input[type="number"],
+select {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Disabled state improvements */
+input:disabled,
+select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #374151;
+}
+
+/* Loading animation for status indicator */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
     }
 }
 
-@media (max-width: 800px) {
-    .controls-grid {
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Results area enhancements */
+#results {
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    line-height: 1.6;
+}
+
+/* Better responsive grid for controls */
+@media (max-width: 1024px) {
+    .lg\:col-span-1 {
+        grid-column: span 1 / span 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-        padding: 12px;
+        gap: 1rem;
     }
     
-    .equation-input-bar {
+    .lg\:col-span-1 {
+        grid-column: span 1 / span 1;
+    }
+}
+
+@media (max-width: 640px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .flex.flex-col.sm\:flex-row {
         flex-direction: column;
-        gap: 12px;
-        align-items: stretch;
     }
     
-    .equation-input-bar > span {
-        text-align: center;
+    button {
+        width: 100%;
+        justify-content: center;
     }
 }
 
-/* Loading state for results */
-.results-content.loading {
-    opacity: 0.7;
+/* Custom property for consistent spacing */
+:root {
+    --spacing-unit: 0.25rem;
 }
 
-/* Error state styling */
-.results-content.error {
-    color: #ff6b6b;
+/* Enhanced typography hierarchy */
+h3 {
+    font-weight: 600;
+    letter-spacing: -0.025em;
 }
 
-/* Success state styling */
-.results-content.success {
-    color: #51cf66;
+/* Improved form labels */
+label {
+    font-weight: 500;
+    letter-spacing: 0.025em;
 }
 
-/* Highlight for active mode */
-.radio-item:has(.radio-input:checked) {
-    background-color: rgba(0, 120, 212, 0.1);
-    padding: 2px 4px;
-    border-radius: 4px;
+/* Better visual hierarchy for the navigation */
+nav {
+    backdrop-filter: blur(8px);
+    background-color: rgba(31, 41, 55, 0.95);
 }
 
-/* Subtle animations */
-.control-group {
-    transition: opacity 0.2s ease;
+/* Subtle animations for mode changes */
+.opacity-50 {
+    transition: opacity 0.3s ease-in-out;
 }
 
-.control-group:hover {
-    opacity: 1;
+/* Enhanced border radius for modern look */
+.rounded-lg {
+    border-radius: 0.5rem;
 }
 
-/* Focus indicators */
-.input-field:focus,
-.select-field:focus,
-.equation-input:focus {
-    box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.3);
+/* Improved button spacing and typography */
+button {
+    font-weight: 500;
+    letter-spacing: 0.025em;
 }
 
-/* Menu bar improvements */
-.menu-bar {
-    user-select: none;
+/* Better contrast for results text */
+.text-gray-300 {
+    color: #d1d5db;
 }
 
-.menu-item {
-    transition: background-color 0.2s ease;
+/* Enhanced visual feedback for status states */
+.text-green-400 {
+    color: #34d399;
 }
 
-/* Title bar styling */
-.title-bar {
-    background: linear-gradient(135deg, #2b2b2b 0%, #3c3c3c 100%);
-    border-bottom: 1px solid #4a4a4a;
+.text-red-400 {
+    color: #f87171;
 }
 
-/* Results area improvements */
-.results-content {
-    padding: 8px;
-    background-color: rgba(64, 64, 64, 0.3);
-    border-radius: 4px;
-    border: 1px solid #404040;
+.text-yellow-400 {
+    color: #fbbf24;
 }
 
-/* Equation input bar enhancements */
-.equation-input-bar {
-    background: linear-gradient(135deg, #2b2b2b 0%, #323232 100%);
+/* Improved spacing for radio groups */
+.space-y-2 > * + * {
+    margin-top: 0.5rem;
 }
 
-/* Control grid enhancements */
-.controls-grid {
-    background: linear-gradient(135deg, #2b2b2b 0%, #363636 100%);
+/* Better alignment for checkboxes and radios */
+input[type="checkbox"],
+input[type="radio"] {
+    margin-top: 0.125rem;
+    flex-shrink: 0;
+}
+
+/* Enhanced mobile responsiveness */
+@media (max-width: 480px) {
+    .p-6 {
+        padding: 1rem;
+    }
+    
+    .text-lg {
+        font-size: 1rem;
+    }
+    
+    .p-3 {
+        padding: 0.5rem;
+    }
 }
