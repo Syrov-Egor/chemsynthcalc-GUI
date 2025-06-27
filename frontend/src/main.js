@@ -10,6 +10,57 @@ function loadTemplate() {
     document.querySelector('#app').innerHTML = appTemplate;
 }
 
+// Function to handle mode changes and enable/disable controls
+function handleModeChange() {
+    const selectedMode = document.querySelector('input[name="mode"]:checked').value;
+    
+    // Get all control elements
+    const algorithm = document.getElementById('algorithm');
+    const runmode = document.getElementById('runmode');
+    const targetNum = document.getElementById('target-num');
+    const targetMass = document.getElementById('target-mass');
+    const intify = document.getElementById('intify');
+    const outputPrecision = document.getElementById('output-precision');
+    const floatTolerance = document.getElementById('float-tolerance');
+    const maxComb = document.getElementById('max-comb');
+    
+    // Reset all to enabled first
+    [algorithm, runmode, targetNum, targetMass, intify, outputPrecision, floatTolerance, maxComb].forEach(el => {
+        if (el) el.disabled = false;
+    });
+    
+    // Apply mode-specific enable/disable rules
+    switch(selectedMode) {
+        case 'formula':
+            // Disable: algorithm, runmode, target-num, target-mass, intify, float-tolerance, max-comb
+            // Enable: output-precision
+            if (algorithm) algorithm.disabled = true;
+            if (runmode) runmode.disabled = true;
+            if (targetNum) targetNum.disabled = true;
+            if (targetMass) targetMass.disabled = true;
+            if (intify) intify.disabled = true;
+            if (floatTolerance) floatTolerance.disabled = true;
+            if (maxComb) maxComb.disabled = true;
+            break;
+            
+        case 'balance':
+            // Disable: runmode, target-num, target-mass, output-precision
+            // Enable: algorithm, intify, float-tolerance, max-comb
+            if (runmode) runmode.disabled = true;
+            if (targetNum) targetNum.disabled = true;
+            if (targetMass) targetMass.disabled = true;
+            if (outputPrecision) outputPrecision.disabled = true;
+            break;
+            
+        case 'masses':
+            // Disable: algorithm, max-comb
+            // Enable: runmode, target-num, target-mass, intify, float-tolerance, output-precision
+            if (algorithm) algorithm.disabled = true;
+            if (maxComb) maxComb.disabled = true;
+            break;
+    }
+}
+
 // Global functions for the UI controls
 window.incrementValue = function(fieldId, delta) {
     const field = document.getElementById(fieldId);
@@ -103,6 +154,15 @@ function initializeUI() {
             }
         });
     }
+    
+    // Add event listeners for mode radio buttons
+    const modeRadios = document.querySelectorAll('input[name="mode"]');
+    modeRadios.forEach(radio => {
+        radio.addEventListener('change', handleModeChange);
+    });
+    
+    // Initialize with current mode selection
+    handleModeChange();
 }
 
 // Initialize the application
