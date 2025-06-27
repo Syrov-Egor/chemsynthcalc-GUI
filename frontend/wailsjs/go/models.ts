@@ -10,6 +10,7 @@ export namespace main {
 	    intify: boolean;
 	    outputPrecision: number;
 	    floatTolerance: number;
+	    maxComb: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new CalculationParams(source);
@@ -26,6 +27,7 @@ export namespace main {
 	        this.intify = source["intify"];
 	        this.outputPrecision = source["outputPrecision"];
 	        this.floatTolerance = source["floatTolerance"];
+	        this.maxComb = source["maxComb"];
 	    }
 	}
 	export class CalculationResult {

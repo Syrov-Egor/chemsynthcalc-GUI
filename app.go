@@ -25,6 +25,7 @@ type CalculationParams struct {
 	Intify          bool    `json:"intify"`
 	OutputPrecision int     `json:"outputPrecision"`
 	FloatTolerance  int     `json:"floatTolerance"`
+	MaxComb         int     `json:"maxComb"`
 }
 
 // CalculationResult represents the result of a chemistry calculation
@@ -117,7 +118,7 @@ func calcBalanceMode(params *CalculationParams) CalculationResult {
 		}
 		method = "PPinv"
 	case "comb":
-		calcResult, err = bal.Comb(15)
+		calcResult, err = bal.Comb(uint(params.MaxComb))
 		if err != nil {
 			return CalculationResult{Success: false, Message: err.Error(), Details: ""}
 		}
@@ -144,7 +145,37 @@ func calcBalanceMode(params *CalculationParams) CalculationResult {
 }
 
 func calcMassesMode(params *CalculationParams) CalculationResult {
-	return CalculationResult{Success: false, Message: "", Details: ""}
+	var rmode g.ReactionMode
+	switch params.RunMode {
+	case "balance":
+		rmode = g.Balance
+	case "check":
+		rmode = g.Check
+	case "force":
+		rmode = g.Force
+	}
+
+	reacOpts := g.ReactionOptions{
+		Rmode:      rmode,
+		Target:     params.TargetNum,
+		TargerMass: params.TargetMass,
+		Intify:     params.Intify,
+		Precision:  8,
+		Tolerance:  sciFloat(params.FloatTolerance),
+	}
+
+	reac, rErr := g.NewChemicalReaction(params.Equation, reacOpts)
+
+	if rErr != nil {
+		return CalculationResult{Success: false, Message: rErr.Error(), Details: ""}
+	}
+
+	out, oErr := reac.Output(uint(params.OutputPrecision))
+	if oErr != nil {
+		return CalculationResult{Success: false, Message: oErr.Error(), Details: ""}
+	}
+
+	return CalculationResult{Success: true, Message: "", Details: out.String()}
 }
 
 func sciFloat(i int) float64 {

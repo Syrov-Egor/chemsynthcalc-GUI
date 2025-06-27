@@ -50,7 +50,7 @@ body {
 
 .controls-grid {
     display: grid;
-    grid-template-columns: repeat(8, 1fr);
+    grid-template-columns: repeat(9, 1fr);
     gap: 16px;
     padding: 20px;
     background-color: #2b2b2b;

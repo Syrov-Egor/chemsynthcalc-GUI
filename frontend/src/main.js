@@ -91,6 +91,13 @@ document.querySelector('#app').innerHTML = `
                 </div>
             </div>
 
+            <div class="control-group">
+                <div class="control-label">Max comb</div>
+                <div class="increment-control">
+                    <input type="number" class="input-field" id="max-comb" value="15" min="1" style="width: 50px;">
+                </div>
+            </div>
+
         </div>
 
         <div class="equation-area">
@@ -137,6 +144,7 @@ window.runCalculation = function() {
     const intify = document.getElementById('intify').checked;
     const outputPrecision = parseInt(document.getElementById('output-precision').value) || 4;
     const floatTolerance = parseInt(document.getElementById('float-tolerance').value) || 8;
+    const maxComb = parseInt(document.getElementById('max-comb').value) || 15;
     
     const results = document.getElementById('results');
     
@@ -160,7 +168,8 @@ window.runCalculation = function() {
         targetMass: targetMass,
         intify: intify,
         outputPrecision: outputPrecision,
-        floatTolerance: floatTolerance
+        floatTolerance: floatTolerance,
+        maxComb: maxComb,
     };
     
     // Call Go backend function
