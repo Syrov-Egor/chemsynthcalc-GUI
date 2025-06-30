@@ -1,7 +1,10 @@
 import { appTemplate } from './template.js';
 
 // Import Wails Go bindings
-import { PerformCalculation } from '../wailsjs/go/main/App';
+import { PerformCalculation, StopCalculation, IsCalculating } from '../wailsjs/go/main/App';
+
+// Global variable to track calculation state
+let isCurrentlyCalculating = false;
 
 // Function to load HTML template
 function loadTemplate() {
@@ -31,8 +34,47 @@ function updateStatus(status, message) {
                 indicator.className = 'w-3 h-3 bg-red-500 rounded-full';
                 text.textContent = message || 'Error';
                 break;
+            case 'cancelled':
+                indicator.className = 'w-3 h-3 bg-orange-500 rounded-full';
+                text.textContent = message || 'Cancelled';
+                break;
         }
     }
+}
+
+// Function to update button state
+function updateRunButton(isCalculating) {
+    const runButton = document.getElementById('run-button');
+    const buttonIcon = document.getElementById('button-icon');
+    const buttonText = document.getElementById('button-text');
+    
+    if (!runButton || !buttonIcon || !buttonText) return;
+    
+    if (isCalculating) {
+        // Change to Stop button
+        runButton.className = 'px-6 py-3 text-lg font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:ring-red-300 transition-all duration-200 flex items-center gap-2 min-w-fit';
+        runButton.onclick = stopCalculation;
+        
+        buttonIcon.innerHTML = `
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clip-rule="evenodd"></path>
+            </svg>
+        `;
+        buttonText.textContent = 'Stop Calculation';
+    } else {
+        // Change back to Run button
+        runButton.className = 'px-6 py-3 text-lg font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-300 transition-all duration-200 flex items-center gap-2 min-w-fit';
+        runButton.onclick = runCalculation;
+        
+        buttonIcon.innerHTML = `
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path>
+            </svg>
+        `;
+        buttonText.textContent = 'Run Calculation';
+    }
+    
+    isCurrentlyCalculating = isCalculating;
 }
 
 // Function to handle mode changes and enable/disable controls
@@ -91,8 +133,38 @@ function handleModeChange() {
     }
 }
 
+// Stop calculation function
+window.stopCalculation = function() {
+    if (!isCurrentlyCalculating) return;
+    
+    const results = document.getElementById('results');
+    
+    // Show stopping message
+    results.textContent = 'Stopping calculation...';
+    results.className = 'p-4 h-full overflow-y-auto text-orange-400 font-mono text-sm leading-6 whitespace-pre-wrap';
+    updateStatus('cancelled', 'Stopping...');
+    
+    // Call Go backend to stop calculation
+    StopCalculation()
+        .then(() => {
+            results.textContent = 'Calculation stopped by user.';
+            results.className = 'p-4 h-full overflow-y-auto text-orange-400 font-mono text-sm leading-6 whitespace-pre-wrap';
+            updateStatus('cancelled', 'Stopped');
+            updateRunButton(false);
+        })
+        .catch((error) => {
+            console.error('Error stopping calculation:', error);
+            results.textContent = 'Error stopping calculation.';
+            results.className = 'p-4 h-full overflow-y-auto text-red-400 font-mono text-sm leading-6 whitespace-pre-wrap';
+            updateStatus('error', 'Stop failed');
+            updateRunButton(false);
+        });
+};
+
 // Enhanced run calculation function with better UX
 window.runCalculation = function() {
+    if (isCurrentlyCalculating) return;
+    
     const equation = document.getElementById('equation-input').value;
     const mode = document.querySelector('input[name="mode"]:checked').value;
     const algorithm = document.getElementById('algorithm').value;
@@ -105,7 +177,6 @@ window.runCalculation = function() {
     const maxComb = parseInt(document.getElementById('max-comb').value) || 15;
     
     const results = document.getElementById('results');
-    const runButton = document.querySelector('button[onclick="runCalculation()"]');
     
     if (!equation.trim()) {
         results.textContent = 'Error: Please enter a chemical equation.';
@@ -119,11 +190,8 @@ window.runCalculation = function() {
     results.className = 'p-4 h-full overflow-y-auto text-yellow-400 font-mono text-sm leading-6 whitespace-pre-wrap';
     updateStatus('loading');
     
-    // Disable run button during calculation
-    if (runButton) {
-        runButton.disabled = true;
-        runButton.classList.add('opacity-50', 'cursor-not-allowed');
-    }
+    // Update button to stop button
+    updateRunButton(true);
     
     // Create parameters object for Go backend
     const params = {
@@ -142,7 +210,11 @@ window.runCalculation = function() {
     // Call Go backend function
     PerformCalculation(params)
         .then((result) => {
-            if (result.success) {
+            if (result.cancelled) {
+                results.textContent = 'Calculation was cancelled.';
+                results.className = 'p-4 h-full overflow-y-auto text-orange-400 font-mono text-sm leading-6 whitespace-pre-wrap';
+                updateStatus('cancelled');
+            } else if (result.success) {
                 results.textContent = result.details;
                 results.className = 'p-4 h-full overflow-y-auto text-green-400 font-mono text-sm leading-6 whitespace-pre-wrap';
                 updateStatus('success');
@@ -159,11 +231,8 @@ window.runCalculation = function() {
             updateStatus('error');
         })
         .finally(() => {
-            // Re-enable run button
-            if (runButton) {
-                runButton.disabled = false;
-                runButton.classList.remove('opacity-50', 'cursor-not-allowed');
-            }
+            // Always restore run button
+            updateRunButton(false);
         });
 };
 
@@ -173,14 +242,22 @@ function setupKeyboardShortcuts() {
         // Ctrl/Cmd + Enter to run calculation
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
             e.preventDefault();
-            runCalculation();
+            if (isCurrentlyCalculating) {
+                stopCalculation();
+            } else {
+                runCalculation();
+            }
         }
         
-        // Escape to focus equation input
+        // Escape to stop calculation or focus equation input
         if (e.key === 'Escape') {
-            const equationInput = document.getElementById('equation-input');
-            if (equationInput) {
-                equationInput.focus();
+            if (isCurrentlyCalculating) {
+                stopCalculation();
+            } else {
+                const equationInput = document.getElementById('equation-input');
+                if (equationInput) {
+                    equationInput.focus();
+                }
             }
         }
     });
@@ -188,7 +265,7 @@ function setupKeyboardShortcuts() {
 
 // Initialize UI after template loads
 function initializeUI() {
-    console.log('ChemSynthCalc initialized with modern UI');
+    console.log('ChemSynthCalc initialized with modern UI and stop functionality');
     
     // Focus on equation input
     const equationInput = document.getElementById('equation-input');
@@ -198,7 +275,11 @@ function initializeUI() {
         // Add Enter key support for equation input
         equationInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                runCalculation();
+                if (isCurrentlyCalculating) {
+                    stopCalculation();
+                } else {
+                    runCalculation();
+                }
             }
         });
     }
@@ -227,8 +308,39 @@ function initializeUI() {
         input:disabled, select:disabled {
             cursor: not-allowed;
         }
+        
+        /* Smooth button transitions */
+        #run-button {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        /* Stop button specific styling */
+        .bg-red-600:hover {
+            background-color: #dc2626;
+        }
+        
+        /* Orange color for cancelled status */
+        .text-orange-400 {
+            color: #fb923c;
+        }
+        
+        .bg-orange-500 {
+            background-color: #f97316;
+        }
     `;
     document.head.appendChild(style);
+    
+    // Check initial calculation state (in case of page refresh during calculation)
+    IsCalculating()
+        .then((calculating) => {
+            if (calculating) {
+                updateRunButton(true);
+                updateStatus('loading', 'Calculating...');
+            }
+        })
+        .catch((error) => {
+            console.error('Error checking calculation state:', error);
+        });
 }
 
 // Initialize the application

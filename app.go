@@ -5,13 +5,17 @@ import (
 	"fmt"
 	"math"
 	"strings"
+	"sync"
 
 	g "github.com/Syrov-Egor/gosynthcalc"
 )
 
 // App struct
 type App struct {
-	ctx context.Context
+	ctx           context.Context
+	cancelFunc    context.CancelFunc
+	cancelMutex   sync.RWMutex
+	isCalculating bool
 }
 
 // CalculationParams represents the parameters for a chemistry calculation
@@ -30,9 +34,10 @@ type CalculationParams struct {
 
 // CalculationResult represents the result of a chemistry calculation
 type CalculationResult struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
-	Details string `json:"details"`
+	Success   bool   `json:"success"`
+	Message   string `json:"message"`
+	Details   string `json:"details"`
+	Cancelled bool   `json:"cancelled"`
 }
 
 // NewApp creates a new App application struct
@@ -46,20 +51,59 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
+// StopCalculation cancels any running calculation
+func (a *App) StopCalculation() {
+	a.cancelMutex.Lock()
+	defer a.cancelMutex.Unlock()
+
+	if a.cancelFunc != nil {
+		a.cancelFunc()
+	}
+}
+
+// IsCalculating returns whether a calculation is currently running
+func (a *App) IsCalculating() bool {
+	a.cancelMutex.RLock()
+	defer a.cancelMutex.RUnlock()
+	return a.isCalculating
+}
+
 func (a *App) PerformCalculation(params CalculationParams) CalculationResult {
+	// Set up cancellation context
+	a.cancelMutex.Lock()
+	ctx, cancel := context.WithCancel(context.Background())
+	a.cancelFunc = cancel
+	a.isCalculating = true
+	a.cancelMutex.Unlock()
+
+	// Cleanup when done
+	defer func() {
+		a.cancelMutex.Lock()
+		a.cancelFunc = nil
+		a.isCalculating = false
+		a.cancelMutex.Unlock()
+	}()
+
 	switch params.Mode {
 	case "formula":
-		return calcFormulaMode(&params)
+		return calcFormulaMode(ctx, &params)
 	case "balance":
-		return calcBalanceMode(&params)
+		return calcBalanceMode(ctx, &params)
 	case "masses":
-		return calcMassesMode(&params)
+		return calcMassesMode(ctx, &params)
 	default:
 		return CalculationResult{}
 	}
 }
 
-func calcFormulaMode(params *CalculationParams) CalculationResult {
+func calcFormulaMode(ctx context.Context, params *CalculationParams) CalculationResult {
+	// Check for cancellation
+	select {
+	case <-ctx.Done():
+		return CalculationResult{Success: false, Message: "Calculation cancelled", Details: "", Cancelled: true}
+	default:
+	}
+
 	form, err := g.NewChemicalFormula(params.Equation)
 	if err != nil {
 		return CalculationResult{Success: false, Message: err.Error(), Details: ""}
@@ -68,7 +112,14 @@ func calcFormulaMode(params *CalculationParams) CalculationResult {
 	return CalculationResult{Success: true, Message: "", Details: out}
 }
 
-func calcBalanceMode(params *CalculationParams) CalculationResult {
+func calcBalanceMode(ctx context.Context, params *CalculationParams) CalculationResult {
+	// Check for cancellation at start
+	select {
+	case <-ctx.Done():
+		return CalculationResult{Success: false, Message: "Calculation cancelled", Details: "", Cancelled: true}
+	default:
+	}
+
 	reacOpts := g.ReactionOptions{
 		Rmode:      g.Balance,
 		Target:     params.TargetNum,
@@ -90,6 +141,13 @@ func calcBalanceMode(params *CalculationParams) CalculationResult {
 
 	var calcResult []float64
 	var method string
+
+	// Check for cancellation before starting computation
+	select {
+	case <-ctx.Done():
+		return CalculationResult{Success: false, Message: "Calculation cancelled", Details: "", Cancelled: true}
+	default:
+	}
 
 	switch params.Algorithm {
 	case "auto":
@@ -118,11 +176,37 @@ func calcBalanceMode(params *CalculationParams) CalculationResult {
 		}
 		method = "PPinv"
 	case "comb":
-		calcResult, err = bal.Comb(uint(params.MaxComb))
-		if err != nil {
+		// For the long-running comb algorithm, we need to run it in a goroutine
+		// and check for cancellation
+		resultChan := make(chan []float64, 1)
+		errorChan := make(chan error, 1)
+
+		go func() {
+			result, err := bal.Comb(uint(params.MaxComb))
+			if err != nil {
+				errorChan <- err
+				return
+			}
+			resultChan <- result
+		}()
+
+		// Wait for either result or cancellation
+		select {
+		case <-ctx.Done():
+			return CalculationResult{Success: false, Message: "Calculation cancelled", Details: "", Cancelled: true}
+		case err := <-errorChan:
 			return CalculationResult{Success: false, Message: err.Error(), Details: ""}
+		case result := <-resultChan:
+			calcResult = result
+			method = "Comb"
 		}
-		method = "Comb"
+	}
+
+	// Check for cancellation before final processing
+	select {
+	case <-ctx.Done():
+		return CalculationResult{Success: false, Message: "Calculation cancelled", Details: "", Cancelled: true}
+	default:
 	}
 
 	setErr := reac.SetCoefficients(calcResult)
@@ -144,7 +228,14 @@ func calcBalanceMode(params *CalculationParams) CalculationResult {
 	return CalculationResult{Success: true, Message: "", Details: output.String()}
 }
 
-func calcMassesMode(params *CalculationParams) CalculationResult {
+func calcMassesMode(ctx context.Context, params *CalculationParams) CalculationResult {
+	// Check for cancellation
+	select {
+	case <-ctx.Done():
+		return CalculationResult{Success: false, Message: "Calculation cancelled", Details: "", Cancelled: true}
+	default:
+	}
+
 	var rmode g.ReactionMode
 	switch params.RunMode {
 	case "balance":
