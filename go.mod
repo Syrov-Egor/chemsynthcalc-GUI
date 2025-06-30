@@ -1,12 +1,12 @@
 module chemsynthcalc
 
-go 1.23.0
+go 1.24
 
 toolchain go1.24.4
 
 require github.com/wailsapp/wails/v2 v2.10.1
 
-require github.com/Syrov-Egor/gosynthcalc v0.1.4
+require github.com/Syrov-Egor/gosynthcalc v0.1.6
 
 require (
 	github.com/bep/debounce v1.2.1 // indirect

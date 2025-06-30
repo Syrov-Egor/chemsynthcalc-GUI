@@ -34,6 +34,7 @@ export namespace main {
 	    success: boolean;
 	    message: string;
 	    details: string;
+	    cancelled: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new CalculationResult(source);
@@ -44,6 +45,7 @@ export namespace main {
 	        this.success = source["success"];
 	        this.message = source["message"];
 	        this.details = source["details"];
+	        this.cancelled = source["cancelled"];
 	    }
 	}
 

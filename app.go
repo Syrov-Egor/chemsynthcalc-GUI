@@ -182,7 +182,7 @@ func calcBalanceMode(ctx context.Context, params *CalculationParams) Calculation
 		errorChan := make(chan error, 1)
 
 		go func() {
-			result, err := bal.Comb(uint(params.MaxComb))
+			result, err := bal.Comb(ctx, uint(params.MaxComb))
 			if err != nil {
 				errorChan <- err
 				return
