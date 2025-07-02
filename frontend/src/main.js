@@ -77,6 +77,93 @@ function updateRunButton(isCalculating) {
     isCurrentlyCalculating = isCalculating;
 }
 
+// Function to hide/show table based on mode and results
+function updateTableVisibility() {
+    const table = document.getElementById('results-table');
+    const selectedMode = document.querySelector('input[name="mode"]:checked')?.value;
+    
+    if (table) {
+        if (selectedMode === 'masses') {
+            // Keep current visibility if in masses mode
+            return;
+        } else {
+            // Hide table if not in masses mode
+            table.style.display = 'none';
+        }
+    }
+}
+
+// Function to create and populate the results table
+function createResultsTable(tabularData) {
+    const selectedMode = document.querySelector('input[name="mode"]:checked')?.value;
+    
+    // Only show table in masses mode
+    if (selectedMode !== 'masses' || !tabularData || tabularData.length === 0) {
+        // Hide table if it exists
+        const existingTable = document.getElementById('results-table');
+        if (existingTable) {
+            existingTable.style.display = 'none';
+        }
+        return;
+    }
+
+    // Remove existing table if it exists
+    const existingTable = document.getElementById('results-table');
+    if (existingTable) {
+        existingTable.remove();
+    }
+
+    // Create table container
+    const tableContainer = document.createElement('div');
+    tableContainer.id = 'results-table';
+    tableContainer.className = 'mt-6';
+
+    // Create table HTML with Material Design styling using Flowbite
+    tableContainer.innerHTML = `
+        <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+            <div class="px-4 py-3 bg-gray-750 border-b border-gray-700">
+                <h4 class="text-sm font-semibold text-gray-200">Tabular Results</h4>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-gray-300">
+                    <thead class="text-xs text-gray-400 uppercase bg-gray-700">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 font-medium">Formula</th>
+                            <th scope="col" class="px-6 py-3 font-medium">Molar mass, g/mol</th>
+                            <th scope="col" class="px-6 py-3 font-medium">Mass, g</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="divide-y divide-gray-700">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+
+    // Get table body
+    const tableBody = tableContainer.querySelector('#table-body');
+
+    // Populate table rows
+    tabularData.forEach((row, index) => {
+        const tr = document.createElement('tr');
+        tr.className = 'bg-gray-800 hover:bg-gray-750 transition-colors';
+        
+        tr.innerHTML = `
+            <td class="px-6 py-4 font-mono text-sm text-white">${row.formula}</td>
+            <td class="px-6 py-4 text-sm text-gray-300">${row.molar.toFixed(4)}</td>
+            <td class="px-6 py-4 text-sm text-gray-300">${row.masses.toFixed(6)}</td>
+        `;
+        
+        tableBody.appendChild(tr);
+    });
+
+    // Insert table after the results text container
+    const resultsSection = document.querySelector('.bg-gray-900.p-6 .h-full');
+    if (resultsSection) {
+        resultsSection.appendChild(tableContainer);
+    }
+}
+
 // Function to handle mode changes and enable/disable controls
 function handleModeChange() {
     const selectedMode = document.querySelector('input[name="mode"]:checked').value;
@@ -131,6 +218,9 @@ function handleModeChange() {
             });
             break;
     }
+    
+    // Update table visibility based on mode
+    updateTableVisibility();
 }
 
 // Stop calculation function
@@ -143,6 +233,12 @@ window.stopCalculation = function() {
     results.textContent = 'Stopping calculation...';
     results.className = 'p-4 h-full overflow-y-auto text-orange-400 font-mono text-sm leading-6 whitespace-pre-wrap';
     updateStatus('cancelled', 'Stopping...');
+    
+    // Hide table during cancellation
+    const table = document.getElementById('results-table');
+    if (table) {
+        table.style.display = 'none';
+    }
     
     // Call Go backend to stop calculation
     StopCalculation()
@@ -182,6 +278,11 @@ window.runCalculation = function() {
         results.textContent = 'Error: Please enter a chemical equation.';
         results.className = 'p-4 h-full overflow-y-auto text-red-400 font-mono text-sm leading-6 whitespace-pre-wrap';
         updateStatus('error', 'Invalid input');
+        // Hide table on error
+        const table = document.getElementById('results-table');
+        if (table) {
+            table.style.display = 'none';
+        }
         return;
     }
     
@@ -189,6 +290,12 @@ window.runCalculation = function() {
     results.textContent = 'Running calculation...';
     results.className = 'p-4 h-full overflow-y-auto text-yellow-400 font-mono text-sm leading-6 whitespace-pre-wrap';
     updateStatus('loading');
+    
+    // Hide table during calculation
+    const table = document.getElementById('results-table');
+    if (table) {
+        table.style.display = 'none';
+    }
     
     // Update button to stop button
     updateRunButton(true);
@@ -214,14 +321,35 @@ window.runCalculation = function() {
                 results.textContent = 'Calculation was cancelled.';
                 results.className = 'p-4 h-full overflow-y-auto text-orange-400 font-mono text-sm leading-6 whitespace-pre-wrap';
                 updateStatus('cancelled');
+                // Hide table on cancellation
+                const table = document.getElementById('results-table');
+                if (table) {
+                    table.style.display = 'none';
+                }
             } else if (result.success) {
                 results.textContent = result.details;
                 results.className = 'p-4 h-full overflow-y-auto text-green-400 font-mono text-sm leading-6 whitespace-pre-wrap';
                 updateStatus('success');
+                
+                // Create table if in masses mode and tabular data exists
+                if (mode === 'masses' && result.tabular && result.tabular.length > 0) {
+                    createResultsTable(result.tabular);
+                } else {
+                    // Hide table if not in masses mode or no tabular data
+                    const table = document.getElementById('results-table');
+                    if (table) {
+                        table.style.display = 'none';
+                    }
+                }
             } else {
                 results.textContent = result.message;
                 results.className = 'p-4 h-full overflow-y-auto text-red-400 font-mono text-sm leading-6 whitespace-pre-wrap';
                 updateStatus('error');
+                // Hide table on error
+                const table = document.getElementById('results-table');
+                if (table) {
+                    table.style.display = 'none';
+                }
             }
         })
         .catch((error) => {
@@ -229,6 +357,11 @@ window.runCalculation = function() {
             results.textContent = `Error: ${error.message || 'Calculation failed'}`;
             results.className = 'p-4 h-full overflow-y-auto text-red-400 font-mono text-sm leading-6 whitespace-pre-wrap';
             updateStatus('error');
+            // Hide table on error
+            const table = document.getElementById('results-table');
+            if (table) {
+                table.style.display = 'none';
+            }
         })
         .finally(() => {
             // Always restore run button
@@ -326,6 +459,24 @@ function initializeUI() {
         
         .bg-orange-500 {
             background-color: #f97316;
+        }
+        
+        /* Table styling enhancements */
+        .bg-gray-750 {
+            background-color: #374151;
+        }
+        
+        #results-table table th {
+            background-color: #374151;
+        }
+        
+        #results-table table tr:hover {
+            background-color: #4b5563;
+        }
+        
+        /* Smooth table transitions */
+        #results-table {
+            transition: all 0.3s ease-in-out;
         }
     `;
     document.head.appendChild(style);
