@@ -85,37 +85,61 @@ function updateRunButton(isCalculating) {
     isCurrentlyCalculating = isCalculating;
 }
 
-// Function to make results section adaptive based on content
+// Improved function to make results section adaptive based on content
 function makeResultsAdaptive() {
     const resultsContainer = document.getElementById('results');
     const resultsSection = document.getElementById('results-section');
+    const resultsContentDiv = document.querySelector('.bg-gray-800.rounded-lg.border.border-gray-700.overflow-hidden'); // The gray container around results
     
     if (!resultsContainer || !resultsSection) return;
     
-    // Reset any previous height constraints
-    resultsSection.style.height = '';
-    resultsSection.style.minHeight = '';
+    // Get viewport height and calculate available space
+    const viewportHeight = window.innerHeight;
+    const navHeight = document.querySelector('nav')?.offsetHeight || 64;
+    const controlsHeight = document.querySelector('.bg-gray-800.border-b.border-gray-700.p-6')?.offsetHeight || 120;
+    const equationHeight = document.querySelector('.bg-gray-800.border-b.border-gray-700.p-6:last-of-type')?.offsetHeight || 80;
     
-    // Get the actual content height
-    const scrollHeight = resultsContainer.scrollHeight;
-    const containerPadding = 32; // 16px top + 16px bottom (p-4)
-    const headerHeight = 56; // Height of header + margin
-    const borderAndSpacing = 8; // Border and spacing
-    const minHeight = 200; // Minimum height for UX
+    // Calculate content dimensions
+    const resultsHeaderHeight = 56; // Height of results header
+    const resultsContainerPadding = 16; // p-4 = 16px
+    const borderAndSpacing = 8; // Borders and spacing
+    const tablePadding = 24; // Additional spacing for table
     
-    // Account for table if it exists and is visible
+    // Get actual text content height
+    const textLines = (resultsContainer.textContent || '').split('\n').length;
+    const lineHeight = 24; // 1.5rem * 16px
+    const actualTextHeight = Math.max(textLines * lineHeight, 48); // Minimum 3 lines
+    
+    // Check if table exists and is visible
     const table = document.getElementById('results-table');
     let tableHeight = 0;
     if (table && table.style.display !== 'none') {
-        tableHeight = table.offsetHeight + 24; // table height + margin
+        tableHeight = table.offsetHeight + tablePadding;
     }
     
-    // Calculate required height
-    const requiredHeight = Math.max(scrollHeight + containerPadding + headerHeight + borderAndSpacing + tableHeight, minHeight);
+    // Calculate the total content height needed
+    const contentHeight = actualTextHeight + resultsContainerPadding * 2 + borderAndSpacing;
+    const totalNeededHeight = resultsHeaderHeight + contentHeight + tableHeight;
     
-    // Set the height
-    resultsSection.style.height = `${requiredHeight}px`;
-    resultsSection.style.minHeight = `${minHeight}px`;
+    // Calculate available space for results section
+    const maxAvailableHeight = viewportHeight - navHeight - controlsHeight - equationHeight - 48; // 48px for margins
+    
+    // Determine optimal height
+    const optimalHeight = Math.min(totalNeededHeight, maxAvailableHeight);
+    const finalHeight = Math.max(optimalHeight, 200); // Minimum 200px for UX
+    
+    // Apply the height
+    resultsSection.style.height = `${finalHeight}px`;
+    resultsSection.style.flexShrink = '0';
+    
+    // Ensure the results container can scroll if content is too long
+    if (totalNeededHeight > finalHeight) {
+        resultsContainer.style.overflowY = 'auto';
+        resultsContainer.style.maxHeight = `${finalHeight - resultsHeaderHeight - tableHeight - borderAndSpacing}px`;
+    } else {
+        resultsContainer.style.overflowY = 'visible';
+        resultsContainer.style.maxHeight = 'none';
+    }
 }
 
 // Function to toggle results spoiler (only for masses mode)
@@ -135,59 +159,62 @@ function toggleResultsSpoiler() {
         spoilerIcon.style.transform = 'rotate(0deg)';
     }
     
-    // Update adaptive sizing after toggle
-    setTimeout(makeResultsAdaptive, 300); // Wait for transition
+    // Update adaptive sizing after toggle with a small delay for transition
+    setTimeout(makeResultsAdaptive, 350);
 }
 
-// Function to show/hide spoiler based on mode and success
+// Enhanced function to show/hide spoiler based on mode and success
 function updateResultsSpoiler(mode, isSuccess = false) {
     const spoilerButton = document.getElementById('results-spoiler-button');
     const regularResultsHeader = document.getElementById('regular-results-header');
+    const spoilerContent = document.getElementById('results-spoiler-content');
+    const spoilerIcon = document.getElementById('results-spoiler-icon');
     
     if (!spoilerButton || !regularResultsHeader) return;
     
     if (mode === 'masses' && isSuccess) {
-        // Show spoiler, hide regular header
+        // Show spoiler interface, hide regular header
         spoilerButton.style.display = 'flex';
         regularResultsHeader.style.display = 'none';
         
         // Initially collapse the spoiler content
-        const spoilerContent = document.getElementById('results-spoiler-content');
-        const spoilerIcon = document.getElementById('results-spoiler-icon');
         if (spoilerContent && spoilerIcon) {
             spoilerContent.style.display = 'none';
             spoilerIcon.style.transform = 'rotate(0deg)';
         }
     } else {
-        // Hide spoiler, show regular header
+        // Hide spoiler interface, show regular header
         spoilerButton.style.display = 'none';
         regularResultsHeader.style.display = 'flex';
         
-        // Make sure content is visible
-        const spoilerContent = document.getElementById('results-spoiler-content');
+        // Make sure content is visible when not in spoiler mode
         if (spoilerContent) {
             spoilerContent.style.display = 'block';
         }
     }
+    
+    // Update adaptive sizing after spoiler state change
+    setTimeout(makeResultsAdaptive, 100);
 }
 
 // Function to hide/show table based on mode and results
-function updateTableVisibility() {
+function updateTableVisibility(mode = null) {
     const table = document.getElementById('results-table');
-    const selectedMode = document.querySelector('input[name="mode"]:checked')?.value;
+    const selectedMode = mode || document.querySelector('input[name="mode"]:checked')?.value;
     
     if (table) {
         if (selectedMode === 'masses') {
-            // Keep current visibility if in masses mode
+            // Keep current visibility if in masses mode - table visibility controlled by data presence
             return;
         } else {
             // Hide table if not in masses mode
             table.style.display = 'none';
+            setTimeout(makeResultsAdaptive, 100);
         }
     }
 }
 
-// Function to create and populate the results table
+// Enhanced function to create and populate the results table
 function createResultsTable(tabularData) {
     const selectedMode = document.querySelector('input[name="mode"]:checked')?.value;
     
@@ -198,6 +225,7 @@ function createResultsTable(tabularData) {
         if (existingTable) {
             existingTable.style.display = 'none';
         }
+        setTimeout(makeResultsAdaptive, 100);
         return;
     }
 
@@ -211,6 +239,7 @@ function createResultsTable(tabularData) {
     const tableContainer = document.createElement('div');
     tableContainer.id = 'results-table';
     tableContainer.className = 'mt-6';
+    tableContainer.style.display = 'block'; // Ensure it's visible
 
     // Create table HTML with Material Design styling using Flowbite
     tableContainer.innerHTML = `
@@ -251,16 +280,19 @@ function createResultsTable(tabularData) {
         tableBody.appendChild(tr);
     });
 
-    // Insert table after the results text container
-    const resultsContentContainer = document.getElementById('results-spoiler-content') || document.querySelector('.bg-gray-900.p-6 .h-full');
-    if (resultsContentContainer) {
-        resultsContentContainer.appendChild(tableContainer);
+    // Insert table after the results spoiler content container
+    const resultsSection = document.getElementById('results-section');
+    if (resultsSection) {
+        resultsSection.appendChild(tableContainer);
     }
+    
+    // Update adaptive sizing after table creation
+    setTimeout(makeResultsAdaptive, 100);
 }
 
 // Function to handle mode changes and enable/disable controls
 function handleModeChange() {
-    const selectedMode = document.querySelector('input[name="mode"]:checked').value;
+    const selectedMode = document.querySelector('input[name="mode"]:checked')?.value;
     
     // Get all control elements
     const algorithm = document.getElementById('algorithm');
@@ -314,13 +346,13 @@ function handleModeChange() {
     }
     
     // Update table visibility based on mode
-    updateTableVisibility();
+    updateTableVisibility(selectedMode);
     
     // Update spoiler visibility (hide when changing modes)
     updateResultsSpoiler(selectedMode, false);
     
     // Make results adaptive after mode change
-    setTimeout(makeResultsAdaptive, 100);
+    setTimeout(makeResultsAdaptive, 150);
 }
 
 // Stop calculation function
@@ -365,13 +397,12 @@ window.stopCalculation = function() {
         });
 };
 
-
 // Enhanced run calculation function with better UX
 window.runCalculation = function() {
     if (isCurrentlyCalculating) return;
     
     const equation = document.getElementById('equation-input').value;
-    const mode = document.querySelector('input[name="mode"]:checked').value;
+    const mode = document.querySelector('input[name="mode"]:checked')?.value;
     const algorithm = document.getElementById('algorithm').value;
     const runMode = document.getElementById('runmode').value;
     const targetNum = parseInt(document.getElementById('target-num').value) || 0;
@@ -478,7 +509,7 @@ window.runCalculation = function() {
             }
             
             // Make results adaptive after content change
-            setTimeout(makeResultsAdaptive, 100);
+            setTimeout(makeResultsAdaptive, 150);
         })
         .catch((error) => {
             console.error('Calculation error:', error);
@@ -494,7 +525,7 @@ window.runCalculation = function() {
             }
             
             // Make results adaptive after error
-            setTimeout(makeResultsAdaptive, 100);
+            setTimeout(makeResultsAdaptive, 150);
         })
         .finally(() => {
             // Always restore run button
@@ -569,13 +600,33 @@ function initializeUI() {
     updateStatus('ready');
     
     // Make initial results adaptive
-    setTimeout(makeResultsAdaptive, 100);
+    setTimeout(makeResultsAdaptive, 200);
+    
+    // Add ResizeObserver to handle window resizes
+    if (window.ResizeObserver) {
+        const resizeObserver = new ResizeObserver(() => {
+            setTimeout(makeResultsAdaptive, 100);
+        });
+        
+        const resultsSection = document.getElementById('results-section');
+        if (resultsSection) {
+            resizeObserver.observe(resultsSection);
+        }
+        
+        // Also observe window resizes
+        resizeObserver.observe(document.body);
+    }
+    
+    // Add window resize listener as fallback
+    window.addEventListener('resize', () => {
+        setTimeout(makeResultsAdaptive, 150);
+    });
     
     // Add observer to make results adaptive when content changes
     const results = document.getElementById('results');
     if (results) {
         const observer = new MutationObserver(() => {
-            setTimeout(makeResultsAdaptive, 50);
+            setTimeout(makeResultsAdaptive, 100);
         });
         observer.observe(results, { childList: true, subtree: true, characterData: true });
     }
@@ -630,6 +681,7 @@ function initializeUI() {
         /* Adaptive results section */
         #results-section {
             transition: height 0.3s ease-in-out;
+            overflow: hidden;
         }
         
         /* Spoiler button styling */
@@ -640,6 +692,32 @@ function initializeUI() {
         /* Spoiler content transitions */
         #results-spoiler-content {
             transition: all 0.3s ease-in-out;
+            overflow: hidden;
+        }
+        
+        /* Ensure proper text wrapping and sizing */
+        #results {
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+        
+        /* Smooth scrolling for results */
+        #results::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        #results::-webkit-scrollbar-track {
+            background: #374151;
+            border-radius: 4px;
+        }
+        
+        #results::-webkit-scrollbar-thumb {
+            background: #6b7280;
+            border-radius: 4px;
+        }
+        
+        #results::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
         }
     `;
     document.head.appendChild(style);
