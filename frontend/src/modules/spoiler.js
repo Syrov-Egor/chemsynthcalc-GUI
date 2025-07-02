@@ -7,6 +7,12 @@ export function toggleResultsSpoiler() {
     const isHidden = spoilerContent.style.display === 'none';
     spoilerContent.style.display = isHidden ? 'block' : 'none';
     spoilerIcon.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
+    
+    // Update last result state
+    if (lastCalculationResult) {
+        lastCalculationResult.spoilerOpen = isHidden;
+        setLastResult(lastCalculationResult);
+    }
 }
 
 export function updateResultsSpoiler(mode, isSuccess) {
@@ -21,12 +27,11 @@ export function updateResultsSpoiler(mode, isSuccess) {
     spoilerButton.style.display = showSpoiler ? 'flex' : 'none';
     regularResultsHeader.style.display = showSpoiler ? 'none' : 'flex';
     
+    // Always collapse by default for masses mode
     if (showSpoiler) {
-        // Collapse spoiler content by default when showing button
         spoilerContent.style.display = 'none';
         spoilerIcon.style.transform = 'rotate(0deg)';
     } else {
-        // Ensure content is visible when not in spoiler mode
         spoilerContent.style.display = 'block';
     }
 }

@@ -6,8 +6,16 @@ export function IsCalculating() {
   return window['go']['main']['App']['IsCalculating']();
 }
 
+export function LoadState() {
+  return window['go']['main']['App']['LoadState']();
+}
+
 export function PerformCalculation(arg1) {
   return window['go']['main']['App']['PerformCalculation'](arg1);
+}
+
+export function SaveState(arg1) {
+  return window['go']['main']['App']['SaveState'](arg1);
 }
 
 export function StopCalculation() {

@@ -4,6 +4,10 @@ import {main} from '../models';
 
 export function IsCalculating():Promise<boolean>;
 
+export function LoadState():Promise<main.AppState>;
+
 export function PerformCalculation(arg1:main.CalculationParams):Promise<main.CalculationResult>;
+
+export function SaveState(arg1:main.AppState):Promise<void>;
 
 export function StopCalculation():Promise<void>;

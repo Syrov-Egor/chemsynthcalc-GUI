@@ -6,6 +6,16 @@ import { PerformCalculation, StopCalculation } from '../../wailsjs/go/main/App.j
 
 let isCurrentlyCalculating = false;
 
+let lastCalculationResult = null;
+
+export function getLastResult() {
+    return lastCalculationResult;
+}
+
+export function setLastResult(result) {
+    lastCalculationResult = result;
+}
+
 export async function runCalculation() {
     if (isCurrentlyCalculating) return;
     
@@ -71,12 +81,20 @@ function prepareUIForCalculation(mode) {
     document.getElementById('results').textContent = 'Running calculation...';
     updateStatus('loading');
     updateRunButton(true);
+    
+    // Always collapse spoiler for masses mode
+    if (mode === 'masses') {
+        document.getElementById('results-spoiler-content').style.display = 'none';
+        document.getElementById('results-spoiler-icon').style.transform = 'rotate(0deg)';
+    }
+    
     updateResultsSpoiler(mode, false);
     updateTableVisibility('none');
 }
 
 function handleCalculationResult(result, mode) {
     const results = document.getElementById('results');
+    lastCalculationResult = result; 
     
     if (result.cancelled) {
         results.textContent = 'Calculation was cancelled.';

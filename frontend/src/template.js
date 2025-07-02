@@ -4,19 +4,25 @@ export const appTemplate = `
         <nav class="bg-gray-800 border-b border-gray-700 px-4 py-3">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-6">
-                    <button type="button" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                        File
-                    </button>
+                    <div class="relative group">
+                        <button type="button" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                            File
+                        </button>
+                        <div class="absolute hidden group-hover:block bg-gray-800 rounded-md shadow-lg z-10 w-32 border border-gray-700">
+                            <button id="file-save" class="block w-full text-left px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">Save</button>
+                            <button id="file-load" class="block w-full text-left px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">Load</button>
+                        </div>
+                    </div>
                     <button type="button" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
                         Help
                     </button>
                 </div>
                 <div class="text-xl font-bold text-primary-400">
-                    ChemSynthCalc v0.0.1
+                    ChemSynthCalc v0.1.0
                 </div>
             </div>
         </nav>
-
+        
         <!-- Main Content -->
         <div class="flex flex-col h-[calc(100vh-4rem)]">
             <!-- Controls Panel -->
