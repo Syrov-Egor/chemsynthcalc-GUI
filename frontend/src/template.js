@@ -129,17 +129,41 @@ export const appTemplate = `
 
             <!-- Results Section -->
             <div class="flex-1 bg-gray-900 p-6">
-                <div class="h-full">
+                <div id="results-section" class="h-full min-h-[200px]">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-200">Results</h3>
-                        <div class="flex items-center space-x-2">
-                            <div id="status-indicator" class="w-3 h-3 bg-gray-500 rounded-full"></div>
-                            <span id="status-text" class="text-sm text-gray-400">Ready</span>
+                        <!-- Regular Results Header (shown by default) -->
+                        <div id="regular-results-header" class="flex items-center justify-between w-full">
+                            <h3 class="text-lg font-semibold text-gray-200">Results</h3>
+                            <div class="flex items-center space-x-2">
+                                <div id="status-indicator" class="w-3 h-3 bg-gray-500 rounded-full"></div>
+                                <span id="status-text" class="text-sm text-gray-400">Ready</span>
+                            </div>
                         </div>
+                        
+                        <!-- Spoiler Button (hidden by default, shown only in masses mode with successful results) -->
+                        <button id="results-spoiler-button" onclick="toggleResultsSpoiler()" 
+                                class="flex items-center justify-between w-full text-left hover:bg-gray-800 p-2 rounded-lg transition-colors"
+                                style="display: none;">
+                            <div class="flex items-center space-x-3">
+                                <span id="results-spoiler-icon" class="text-gray-400 transition-transform duration-200" style="transform: rotate(0deg);">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </span>
+                                <h3 class="text-lg font-semibold text-gray-200">Mass Calculation Results</h3>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <div id="status-indicator-spoiler" class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                <span id="status-text-spoiler" class="text-sm text-gray-400">Complete</span>
+                            </div>
+                        </button>
                     </div>
-                    <div class="bg-gray-800 rounded-lg border border-gray-700 h-[calc(100%-3rem)] overflow-hidden">
-                        <div id="results" class="p-4 h-full overflow-y-auto text-gray-300 font-mono text-sm leading-6 whitespace-pre-wrap">
-Ready to calculate. Enter your chemical equation above and click Run.
+                    
+                    <div id="results-spoiler-content" class="transition-all duration-300">
+                        <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+                            <div id="results" class="p-4 h-full overflow-y-auto text-gray-300 font-mono text-sm leading-6 whitespace-pre-wrap">
+Ready
+                            </div>
                         </div>
                     </div>
                 </div>

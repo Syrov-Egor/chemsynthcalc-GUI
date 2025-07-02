@@ -15,6 +15,8 @@ function loadTemplate() {
 function updateStatus(status, message) {
     const indicator = document.getElementById('status-indicator');
     const text = document.getElementById('status-text');
+    const spoilerIndicator = document.getElementById('status-indicator-spoiler');
+    const spoilerText = document.getElementById('status-text-spoiler');
     
     if (indicator && text) {
         switch(status) {
@@ -39,6 +41,12 @@ function updateStatus(status, message) {
                 text.textContent = message || 'Cancelled';
                 break;
         }
+    }
+    
+    // Sync spoiler status indicators
+    if (spoilerIndicator && spoilerText) {
+        spoilerIndicator.className = indicator.className;
+        spoilerText.textContent = text.textContent;
     }
 }
 
@@ -91,12 +99,19 @@ function makeResultsAdaptive() {
     // Get the actual content height
     const scrollHeight = resultsContainer.scrollHeight;
     const containerPadding = 32; // 16px top + 16px bottom (p-4)
-    const headerHeight = 56; // Height of "Results" header + margin
+    const headerHeight = 56; // Height of header + margin
     const borderAndSpacing = 8; // Border and spacing
     const minHeight = 200; // Minimum height for UX
     
+    // Account for table if it exists and is visible
+    const table = document.getElementById('results-table');
+    let tableHeight = 0;
+    if (table && table.style.display !== 'none') {
+        tableHeight = table.offsetHeight + 24; // table height + margin
+    }
+    
     // Calculate required height
-    const requiredHeight = Math.max(scrollHeight + containerPadding + headerHeight + borderAndSpacing, minHeight);
+    const requiredHeight = Math.max(scrollHeight + containerPadding + headerHeight + borderAndSpacing + tableHeight, minHeight);
     
     // Set the height
     resultsSection.style.height = `${requiredHeight}px`;
@@ -119,6 +134,9 @@ function toggleResultsSpoiler() {
         spoilerContent.style.display = 'none';
         spoilerIcon.style.transform = 'rotate(0deg)';
     }
+    
+    // Update adaptive sizing after toggle
+    setTimeout(makeResultsAdaptive, 300); // Wait for transition
 }
 
 // Function to show/hide spoiler based on mode and success
@@ -135,8 +153,10 @@ function updateResultsSpoiler(mode, isSuccess = false) {
         
         // Initially collapse the spoiler content
         const spoilerContent = document.getElementById('results-spoiler-content');
-        if (spoilerContent) {
+        const spoilerIcon = document.getElementById('results-spoiler-icon');
+        if (spoilerContent && spoilerIcon) {
             spoilerContent.style.display = 'none';
+            spoilerIcon.style.transform = 'rotate(0deg)';
         }
     } else {
         // Hide spoiler, show regular header
@@ -344,6 +364,7 @@ window.stopCalculation = function() {
             setTimeout(makeResultsAdaptive, 100);
         });
 };
+
 
 // Enhanced run calculation function with better UX
 window.runCalculation = function() {
