@@ -67,14 +67,14 @@ export const appTemplate = `
                     <div class="lg:col-span-1">
                         <label for="target-num" class="block text-sm font-medium text-gray-300 mb-3">Target #</label>
                         <div class="relative">
-                            <input type="number" id="target-num" value="0" min="0" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                            <input type="number" id="target-num" value="0" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
                         </div>
                     </div>
 
                     <!-- Target Mass -->
                     <div class="lg:col-span-1">
                         <label for="target-mass" class="block text-sm font-medium text-gray-300 mb-3">Target Mass (g)</label>
-                        <input type="number" id="target-mass" value="1.000000" min="0" step="0.000001" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
+                        <input type="number" id="target-mass" value="1.000000" min="0" step="1.000000" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5">
                     </div>
 
                     <!-- Intify Coefficients -->
