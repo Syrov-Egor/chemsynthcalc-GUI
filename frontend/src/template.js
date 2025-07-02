@@ -111,8 +111,8 @@ export const appTemplate = `
             <div class="bg-gray-800 border-b border-gray-700 p-6">
                 <div class="flex flex-col sm:flex-row gap-4 items-end">
                     <div class="flex-1">
-                        <label for="equation-input" class="block text-sm font-medium text-gray-300 mb-2">Chemical Equation</label>
-                        <input type="text" id="equation-input" placeholder="H2+O2=H2O" value="H2+O2=H2O" 
+                        <label for="equation-input" class="block text-sm font-medium text-gray-300 mb-2">Input</label>
+                        <input type="text" id="equation-input" placeholder="H2+O2=H2O"
                                class="bg-gray-700 border border-gray-600 text-white text-lg rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-3 font-mono">
                     </div>
                     <button type="button" id="run-button" onclick="runCalculation()" 
