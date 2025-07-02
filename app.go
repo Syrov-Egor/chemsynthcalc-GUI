@@ -29,10 +29,17 @@ type CalculationParams struct {
 
 // CalculationResult represents the result of a chemistry calculation
 type CalculationResult struct {
-	Success   bool   `json:"success"`
-	Message   string `json:"message"`
-	Details   string `json:"details"`
-	Cancelled bool   `json:"cancelled"`
+	Success   bool          `json:"success"`
+	Message   string        `json:"message"`
+	Details   string        `json:"details"`
+	Cancelled bool          `json:"cancelled"`
+	Tabular   []TabularData `json:"tabular"`
+}
+
+type TabularData struct {
+	Formula string  `json:"formula"`
+	Molar   float64 `json:"molar"`
+	Masses  float64 `json:"masses"`
 }
 
 // NewApp creates a new App application struct

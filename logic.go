@@ -224,7 +224,16 @@ func calcMassesMode(ctx context.Context, params *CalculationParams) CalculationR
 		return errorousCalculation(oErr.Error())
 	}
 
-	return CalculationResult{Success: true, Message: "", Details: out.String()}
+	tabular := []TabularData{}
+
+	for i, form := range out.Formulas {
+		tabular = append(tabular,
+			TabularData{Formula: form,
+				Molar:  out.MolarMasses[i],
+				Masses: out.Masses[i]})
+	}
+
+	return CalculationResult{Success: true, Message: "", Details: out.String(), Tabular: tabular}
 }
 
 func sciFloat(i int) float64 {
