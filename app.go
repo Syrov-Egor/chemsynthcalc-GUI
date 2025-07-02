@@ -40,10 +40,9 @@ type AppState struct {
 func (a *App) SaveState(state AppState) error {
 	defaultFilename := "CSC_Untitled_" + time.Now().Format("20060102_150405") + ".json"
 	if state.Equation != "" {
-		// Sanitize equation for filename
 		sanitizedEq := sanitizeEquation(state.Equation)
 		if sanitizedEq != "" {
-			defaultFilename = "CSC_" + sanitizedEq + "_" + time.Now().Format("20060102_150405") + ".json"
+			defaultFilename = "CSC_" + state.Mode + "_" + sanitizedEq + "_" + time.Now().Format("20060102_150405") + ".json"
 		}
 	}
 	filePath, err := runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
@@ -107,8 +106,8 @@ func sanitizeEquation(equation string) string {
 		}
 	}, equation)
 
-	if len(sanitized) > 250 {
-		sanitized = sanitized[:250]
+	if len(sanitized) > 200 {
+		sanitized = sanitized[:200]
 	}
 
 	if sanitized == "" {
