@@ -108,24 +108,25 @@ export const appTemplate = `
             </div>
 
             <!-- Equation Input Section -->
-            <div class="bg-gray-800 border-b border-gray-700 p-6">
-                <div class="flex flex-col sm:flex-row gap-4 items-end">
-                    <div class="flex-1">
-                        <label for="equation-input" class="block text-sm font-medium text-gray-300 mb-2">Input</label>
-                        <input type="text" id="equation-input" placeholder="H2+O2=H2O"
-                               class="bg-gray-700 border border-gray-600 text-white text-lg rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-3 font-mono">
-                    </div>
-                    <button type="button" id="run-button" onclick="runCalculation()" 
-                            class="px-6 py-3 text-lg font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-300 transition-all duration-200 flex items-center gap-2 min-w-fit">
-                        <span id="button-icon">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path>
-                            </svg>
-                        </span>
-                        <span id="button-text">Run Calculation</span>
-                    </button>
+        <div class="bg-gray-800 border-b border-gray-700 p-6">
+            <div class="flex flex-col sm:flex-row gap-4 items-end">
+                <div class="flex-1">
+                    <label for="equation-input" class="block text-sm font-medium text-gray-300 mb-2">Input</label>
+                    <input type="text" id="equation-input" placeholder="H2+O2=H2O" value="H2+O2=H2O" 
+                           class="bg-gray-700 border border-gray-600 text-white text-lg rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-3 font-mono">
                 </div>
+                <!-- REMOVE onclick HANDLER FROM THIS BUTTON -->
+                <button type="button" id="run-button"
+                        class="px-6 py-3 text-lg font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-300 transition-all duration-200 flex items-center gap-2 min-w-fit">
+                    <span id="button-icon">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path>
+                        </svg>
+                    </span>
+                    <span id="button-text">Run Calculation</span>
+                </button>
             </div>
+        </div>
 
             <!-- Results Section -->
             <div class="flex-1 bg-gray-900 p-6">

@@ -45,6 +45,9 @@ function initializeUI() {
     setupKeyboardShortcuts();
     updateStatus('ready');
     
+    // Initialize button state
+    updateRunButton(false);
+    
     // Check if calculation was in progress
     IsCalculating().then(calculating => {
         if (calculating) {
