@@ -77,6 +77,80 @@ function updateRunButton(isCalculating) {
     isCurrentlyCalculating = isCalculating;
 }
 
+// Function to make results section adaptive based on content
+function makeResultsAdaptive() {
+    const resultsContainer = document.getElementById('results');
+    const resultsSection = document.getElementById('results-section');
+    
+    if (!resultsContainer || !resultsSection) return;
+    
+    // Reset any previous height constraints
+    resultsSection.style.height = '';
+    resultsSection.style.minHeight = '';
+    
+    // Get the actual content height
+    const scrollHeight = resultsContainer.scrollHeight;
+    const containerPadding = 32; // 16px top + 16px bottom (p-4)
+    const headerHeight = 56; // Height of "Results" header + margin
+    const borderAndSpacing = 8; // Border and spacing
+    const minHeight = 200; // Minimum height for UX
+    
+    // Calculate required height
+    const requiredHeight = Math.max(scrollHeight + containerPadding + headerHeight + borderAndSpacing, minHeight);
+    
+    // Set the height
+    resultsSection.style.height = `${requiredHeight}px`;
+    resultsSection.style.minHeight = `${minHeight}px`;
+}
+
+// Function to toggle results spoiler (only for masses mode)
+function toggleResultsSpoiler() {
+    const spoilerContent = document.getElementById('results-spoiler-content');
+    const spoilerIcon = document.getElementById('results-spoiler-icon');
+    
+    if (!spoilerContent || !spoilerIcon) return;
+    
+    const isHidden = spoilerContent.style.display === 'none';
+    
+    if (isHidden) {
+        spoilerContent.style.display = 'block';
+        spoilerIcon.style.transform = 'rotate(90deg)';
+    } else {
+        spoilerContent.style.display = 'none';
+        spoilerIcon.style.transform = 'rotate(0deg)';
+    }
+}
+
+// Function to show/hide spoiler based on mode and success
+function updateResultsSpoiler(mode, isSuccess = false) {
+    const spoilerButton = document.getElementById('results-spoiler-button');
+    const regularResultsHeader = document.getElementById('regular-results-header');
+    
+    if (!spoilerButton || !regularResultsHeader) return;
+    
+    if (mode === 'masses' && isSuccess) {
+        // Show spoiler, hide regular header
+        spoilerButton.style.display = 'flex';
+        regularResultsHeader.style.display = 'none';
+        
+        // Initially collapse the spoiler content
+        const spoilerContent = document.getElementById('results-spoiler-content');
+        if (spoilerContent) {
+            spoilerContent.style.display = 'none';
+        }
+    } else {
+        // Hide spoiler, show regular header
+        spoilerButton.style.display = 'none';
+        regularResultsHeader.style.display = 'flex';
+        
+        // Make sure content is visible
+        const spoilerContent = document.getElementById('results-spoiler-content');
+        if (spoilerContent) {
+            spoilerContent.style.display = 'block';
+        }
+    }
+}
+
 // Function to hide/show table based on mode and results
 function updateTableVisibility() {
     const table = document.getElementById('results-table');
@@ -158,9 +232,9 @@ function createResultsTable(tabularData) {
     });
 
     // Insert table after the results text container
-    const resultsSection = document.querySelector('.bg-gray-900.p-6 .h-full');
-    if (resultsSection) {
-        resultsSection.appendChild(tableContainer);
+    const resultsContentContainer = document.getElementById('results-spoiler-content') || document.querySelector('.bg-gray-900.p-6 .h-full');
+    if (resultsContentContainer) {
+        resultsContentContainer.appendChild(tableContainer);
     }
 }
 
@@ -221,6 +295,12 @@ function handleModeChange() {
     
     // Update table visibility based on mode
     updateTableVisibility();
+    
+    // Update spoiler visibility (hide when changing modes)
+    updateResultsSpoiler(selectedMode, false);
+    
+    // Make results adaptive after mode change
+    setTimeout(makeResultsAdaptive, 100);
 }
 
 // Stop calculation function
@@ -228,13 +308,15 @@ window.stopCalculation = function() {
     if (!isCurrentlyCalculating) return;
     
     const results = document.getElementById('results');
+    const selectedMode = document.querySelector('input[name="mode"]:checked')?.value;
     
     // Show stopping message
     results.textContent = 'Stopping calculation...';
     results.className = 'p-4 h-full overflow-y-auto text-orange-400 font-mono text-sm leading-6 whitespace-pre-wrap';
     updateStatus('cancelled', 'Stopping...');
     
-    // Hide table during cancellation
+    // Hide spoiler and table during cancellation
+    updateResultsSpoiler(selectedMode, false);
     const table = document.getElementById('results-table');
     if (table) {
         table.style.display = 'none';
@@ -247,6 +329,9 @@ window.stopCalculation = function() {
             results.className = 'p-4 h-full overflow-y-auto text-orange-400 font-mono text-sm leading-6 whitespace-pre-wrap';
             updateStatus('cancelled', 'Stopped');
             updateRunButton(false);
+            
+            // Make results adaptive
+            setTimeout(makeResultsAdaptive, 100);
         })
         .catch((error) => {
             console.error('Error stopping calculation:', error);
@@ -254,6 +339,9 @@ window.stopCalculation = function() {
             results.className = 'p-4 h-full overflow-y-auto text-red-400 font-mono text-sm leading-6 whitespace-pre-wrap';
             updateStatus('error', 'Stop failed');
             updateRunButton(false);
+            
+            // Make results adaptive
+            setTimeout(makeResultsAdaptive, 100);
         });
 };
 
@@ -278,11 +366,16 @@ window.runCalculation = function() {
         results.textContent = 'Error: Please enter a chemical equation.';
         results.className = 'p-4 h-full overflow-y-auto text-red-400 font-mono text-sm leading-6 whitespace-pre-wrap';
         updateStatus('error', 'Invalid input');
-        // Hide table on error
+        
+        // Hide spoiler and table on error
+        updateResultsSpoiler(mode, false);
         const table = document.getElementById('results-table');
         if (table) {
             table.style.display = 'none';
         }
+        
+        // Make results adaptive
+        setTimeout(makeResultsAdaptive, 100);
         return;
     }
     
@@ -291,7 +384,8 @@ window.runCalculation = function() {
     results.className = 'p-4 h-full overflow-y-auto text-yellow-400 font-mono text-sm leading-6 whitespace-pre-wrap';
     updateStatus('loading');
     
-    // Hide table during calculation
+    // Hide spoiler and table during calculation
+    updateResultsSpoiler(mode, false);
     const table = document.getElementById('results-table');
     if (table) {
         table.style.display = 'none';
@@ -299,6 +393,9 @@ window.runCalculation = function() {
     
     // Update button to stop button
     updateRunButton(true);
+    
+    // Make results adaptive for loading state
+    setTimeout(makeResultsAdaptive, 100);
     
     // Create parameters object for Go backend
     const params = {
@@ -321,7 +418,9 @@ window.runCalculation = function() {
                 results.textContent = 'Calculation was cancelled.';
                 results.className = 'p-4 h-full overflow-y-auto text-orange-400 font-mono text-sm leading-6 whitespace-pre-wrap';
                 updateStatus('cancelled');
-                // Hide table on cancellation
+                
+                // Hide spoiler and table on cancellation
+                updateResultsSpoiler(mode, false);
                 const table = document.getElementById('results-table');
                 if (table) {
                     table.style.display = 'none';
@@ -330,6 +429,9 @@ window.runCalculation = function() {
                 results.textContent = result.details;
                 results.className = 'p-4 h-full overflow-y-auto text-green-400 font-mono text-sm leading-6 whitespace-pre-wrap';
                 updateStatus('success');
+                
+                // Show spoiler for masses mode on success
+                updateResultsSpoiler(mode, true);
                 
                 // Create table if in masses mode and tabular data exists
                 if (mode === 'masses' && result.tabular && result.tabular.length > 0) {
@@ -345,29 +447,42 @@ window.runCalculation = function() {
                 results.textContent = result.message;
                 results.className = 'p-4 h-full overflow-y-auto text-red-400 font-mono text-sm leading-6 whitespace-pre-wrap';
                 updateStatus('error');
-                // Hide table on error
+                
+                // Hide spoiler and table on error
+                updateResultsSpoiler(mode, false);
                 const table = document.getElementById('results-table');
                 if (table) {
                     table.style.display = 'none';
                 }
             }
+            
+            // Make results adaptive after content change
+            setTimeout(makeResultsAdaptive, 100);
         })
         .catch((error) => {
             console.error('Calculation error:', error);
             results.textContent = `Error: ${error.message || 'Calculation failed'}`;
             results.className = 'p-4 h-full overflow-y-auto text-red-400 font-mono text-sm leading-6 whitespace-pre-wrap';
             updateStatus('error');
-            // Hide table on error
+            
+            // Hide spoiler and table on error
+            updateResultsSpoiler(mode, false);
             const table = document.getElementById('results-table');
             if (table) {
                 table.style.display = 'none';
             }
+            
+            // Make results adaptive after error
+            setTimeout(makeResultsAdaptive, 100);
         })
         .finally(() => {
             // Always restore run button
             updateRunButton(false);
         });
 };
+
+// Make toggle function globally accessible
+window.toggleResultsSpoiler = toggleResultsSpoiler;
 
 // Enhanced keyboard shortcuts
 function setupKeyboardShortcuts() {
@@ -398,7 +513,7 @@ function setupKeyboardShortcuts() {
 
 // Initialize UI after template loads
 function initializeUI() {
-    console.log('ChemSynthCalc initialized with modern UI and stop functionality');
+    console.log('ChemSynthCalc initialized with modern UI, adaptive results, and stop functionality');
     
     // Focus on equation input
     const equationInput = document.getElementById('equation-input');
@@ -431,6 +546,18 @@ function initializeUI() {
     
     // Set initial status
     updateStatus('ready');
+    
+    // Make initial results adaptive
+    setTimeout(makeResultsAdaptive, 100);
+    
+    // Add observer to make results adaptive when content changes
+    const results = document.getElementById('results');
+    if (results) {
+        const observer = new MutationObserver(() => {
+            setTimeout(makeResultsAdaptive, 50);
+        });
+        observer.observe(results, { childList: true, subtree: true, characterData: true });
+    }
     
     // Add smooth transitions for disabled elements
     const style = document.createElement('style');
@@ -476,6 +603,21 @@ function initializeUI() {
         
         /* Smooth table transitions */
         #results-table {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        /* Adaptive results section */
+        #results-section {
+            transition: height 0.3s ease-in-out;
+        }
+        
+        /* Spoiler button styling */
+        #results-spoiler-icon {
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        /* Spoiler content transitions */
+        #results-spoiler-content {
             transition: all 0.3s ease-in-out;
         }
     `;
