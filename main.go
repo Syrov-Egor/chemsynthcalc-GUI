@@ -6,10 +6,15 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/linux"
+	"github.com/wailsapp/wails/v2/pkg/options/mac"
 )
 
 //go:embed all:frontend/dist
 var assets embed.FS
+
+//go:embed build/appicon.png
+var icon []byte
 
 func main() {
 	// Create an instance of the app structure
@@ -17,9 +22,11 @@ func main() {
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:  "chemsynthcalc",
-		Width:  1024,
-		Height: 768,
+		Title:     "chemsynthcalc",
+		Width:     1280,
+		Height:    720,
+		MinWidth:  1280,
+		MinHeight: 720,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
@@ -27,6 +34,20 @@ func main() {
 		OnStartup:        app.startup,
 		Bind: []interface{}{
 			app,
+		},
+
+		Linux: &linux.Options{
+			Icon:                icon,
+			WindowIsTranslucent: false,
+			WebviewGpuPolicy:    linux.WebviewGpuPolicyAlways,
+			ProgramName:         "chemsynthcalc",
+		},
+
+		Mac: &mac.Options{
+			About: &mac.AboutInfo{
+				Title: "chemsynthcalc",
+				Icon:  icon,
+			},
 		},
 	})
 

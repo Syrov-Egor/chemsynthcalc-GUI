@@ -228,10 +228,11 @@ func (a *App) ShowAboutDialog() (string, error) {
 		Title:   "About ChemSynthCalc",
 		Message: message.String(),
 		Buttons: []string{"OK"},
+		Icon:    icon,
 	})
 }
 
 func (a *App) ShowHowToDialog() {
-	wikiURL := "https://github.com/Syrov-Egor/chemsynthcalc-wails/wiki"
+	wikiURL := "https://github.com/Syrov-Egor/chemsynthcalc-GUI/wiki"
 	runtime.BrowserOpenURL(a.ctx, wikiURL)
 }
