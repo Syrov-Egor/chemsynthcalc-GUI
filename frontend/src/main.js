@@ -7,7 +7,9 @@ import { createResultsTable, updateTableVisibility } from './modules/table.js';
 import { handleModeChange } from './modules/modeHandlers.js';
 import { runCalculation, stopCalculation, getLastResult, setLastResult } from './modules/calculation.js';
 import { setupKeyboardShortcuts } from './modules/keyboardShortcuts.js';
+import { EXAMPLE_EQUATIONS } from './modules/exampleEq.js';
 import { SaveState, LoadState, IsCalculating, ShowAboutDialog, ShowHowToDialog } from '../wailsjs/go/main/App.js';
+
 
 window.runCalculation = runCalculation;
 window.stopCalculation = stopCalculation;
@@ -168,6 +170,12 @@ function initializeUI() {
     initializeEventListeners();
     setupKeyboardShortcuts();
     updateStatus('ready');
+
+    const equationInput = document.getElementById('equation-input');
+    if (equationInput) {
+        const randomIndex = Math.floor(Math.random() * EXAMPLE_EQUATIONS.length);
+        equationInput.placeholder = EXAMPLE_EQUATIONS[randomIndex];
+    }
     
     updateRunButton(false);
     

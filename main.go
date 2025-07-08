@@ -25,8 +25,8 @@ func main() {
 		Title:     "chemsynthcalc",
 		Width:     1280,
 		Height:    720,
-		MinWidth:  1280,
-		MinHeight: 720,
+		MinWidth:  854,
+		MinHeight: 480,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},

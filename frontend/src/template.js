@@ -124,10 +124,9 @@ export const appTemplate = `
             <div class="flex flex-col sm:flex-row gap-4 items-end">
                 <div class="flex-1">
                     <label for="equation-input" class="block text-sm font-medium text-gray-300 mb-2">Input</label>
-                    <input type="text" id="equation-input" placeholder="H2+O2=H2O" value="H2+O2=H2O" 
+                    <input type="text" id="equation-input" placeholder="H2+O2=H2O" 
                            class="bg-gray-700 border border-gray-600 text-white text-lg rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-3 font-mono">
                 </div>
-                <!-- REMOVE onclick HANDLER FROM THIS BUTTON -->
                 <button type="button" id="run-button"
                         class="px-6 py-3 text-lg font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-300 transition-all duration-200 flex items-center gap-2 min-w-fit">
                     <span id="button-icon">
