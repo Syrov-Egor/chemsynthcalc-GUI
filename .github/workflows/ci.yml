@@ -14,8 +14,8 @@ jobs:
         build:
           - name: 'chemsynthcalc-lin'
             platform:  'linux/amd64'
-            os: 'ubuntu-latest'
-          - name: 'chemsynthcalc-win'
+            os: 'ubuntu-22.04'
+          - name: 'chemsynthcalc.exe'
             platform:  'windows/amd64'
             os: 'windows-latest'
           - name: 'chemsynthcalc'
