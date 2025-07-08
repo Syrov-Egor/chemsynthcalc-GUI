@@ -18,6 +18,14 @@ export function SaveState(arg1) {
   return window['go']['main']['App']['SaveState'](arg1);
 }
 
+export function ShowAboutDialog() {
+  return window['go']['main']['App']['ShowAboutDialog']();
+}
+
+export function ShowHowToDialog() {
+  return window['go']['main']['App']['ShowHowToDialog']();
+}
+
 export function StopCalculation() {
   return window['go']['main']['App']['StopCalculation']();
 }

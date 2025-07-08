@@ -10,4 +10,8 @@ export function PerformCalculation(arg1:main.CalculationParams):Promise<main.Cal
 
 export function SaveState(arg1:main.AppState):Promise<void>;
 
+export function ShowAboutDialog():Promise<string>;
+
+export function ShowHowToDialog():Promise<void>;
+
 export function StopCalculation():Promise<void>;

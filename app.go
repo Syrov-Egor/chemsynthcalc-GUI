@@ -11,7 +11,6 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-// App struct
 type App struct {
 	ctx           context.Context
 	cancelFunc    context.CancelFunc
@@ -64,7 +63,6 @@ func (a *App) SaveState(state AppState) error {
 		filePath += ".json"
 	}
 
-	// Ensure all fields have default values
 	if state.Mode == "" {
 		state.Mode = "masses" // Default mode
 	}
@@ -142,7 +140,6 @@ func (a *App) LoadState() (AppState, error) {
 	return state, err
 }
 
-// CalculationParams represents the parameters for a chemistry calculation
 type CalculationParams struct {
 	Equation        string  `json:"equation"`
 	Mode            string  `json:"mode"`
@@ -156,7 +153,6 @@ type CalculationParams struct {
 	MaxComb         int     `json:"maxComb"`
 }
 
-// CalculationResult represents the result of a chemistry calculation
 type CalculationResult struct {
 	Success   bool          `json:"success"`
 	Message   string        `json:"message"`
@@ -171,18 +167,14 @@ type TabularData struct {
 	Masses  float64 `json:"masses"`
 }
 
-// NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{}
 }
 
-// startup is called when the app starts. The context is saved
-// so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-// StopCalculation cancels any running calculation
 func (a *App) StopCalculation() {
 	a.cancelMutex.Lock()
 	defer a.cancelMutex.Unlock()
@@ -192,7 +184,6 @@ func (a *App) StopCalculation() {
 	}
 }
 
-// IsCalculating returns whether a calculation is currently running
 func (a *App) IsCalculating() bool {
 	a.cancelMutex.RLock()
 	defer a.cancelMutex.RUnlock()
@@ -200,14 +191,12 @@ func (a *App) IsCalculating() bool {
 }
 
 func (a *App) PerformCalculation(params CalculationParams) CalculationResult {
-	// Set up cancellation context
 	a.cancelMutex.Lock()
 	ctx, cancel := context.WithCancel(context.Background())
 	a.cancelFunc = cancel
 	a.isCalculating = true
 	a.cancelMutex.Unlock()
 
-	// Cleanup when done
 	defer func() {
 		a.cancelMutex.Lock()
 		a.cancelFunc = nil
@@ -225,4 +214,24 @@ func (a *App) PerformCalculation(params CalculationParams) CalculationResult {
 	default:
 		return CalculationResult{}
 	}
+}
+
+func (a *App) ShowAboutDialog() (string, error) {
+	var message strings.Builder
+	name := "ChemSynthCalc v0.1.0\n"
+	body := "\nA chemical synthesis calculator for balancing equations, calculating molar masses, and determining stoichiometric mass ratios. \n\nDeveloped with Wails (https://wails.io) using Go backend with GoNum (https://www.gonum.org/) for high-performance chemistry computations.\n"
+	sign := "\nEgor Syrov, 2025"
+	message.WriteString(name)
+	message.WriteString(body)
+	message.WriteString(sign)
+	return runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+		Title:   "About ChemSynthCalc",
+		Message: message.String(),
+		Buttons: []string{"OK"},
+	})
+}
+
+func (a *App) ShowHowToDialog() {
+	wikiURL := "https://github.com/Syrov-Egor/chemsynthcalc-wails/wiki"
+	runtime.BrowserOpenURL(a.ctx, wikiURL)
 }

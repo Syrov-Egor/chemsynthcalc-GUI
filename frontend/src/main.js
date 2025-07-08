@@ -7,9 +7,8 @@ import { createResultsTable, updateTableVisibility } from './modules/table.js';
 import { handleModeChange } from './modules/modeHandlers.js';
 import { runCalculation, stopCalculation, getLastResult, setLastResult } from './modules/calculation.js';
 import { setupKeyboardShortcuts } from './modules/keyboardShortcuts.js';
-import { SaveState, LoadState, IsCalculating } from '../wailsjs/go/main/App.js';
+import { SaveState, LoadState, IsCalculating, ShowAboutDialog, ShowHowToDialog } from '../wailsjs/go/main/App.js';
 
-// Make functions globally accessible
 window.runCalculation = runCalculation;
 window.stopCalculation = stopCalculation;
 window.toggleResultsSpoiler = toggleResultsSpoiler;
@@ -67,10 +66,8 @@ function collectAppState() {
 }
 
 function applyAppState(state) {
-    // Set input values with null checks
     document.getElementById('equation-input').value = state.equation || "H2+O2=H2O";
     
-    // Set radio buttons with null check
     const mode = state.mode || "masses";
     document.querySelectorAll(`input[name="mode"]`).forEach(radio => {
         radio.checked = radio.value === mode;
@@ -82,14 +79,12 @@ function applyAppState(state) {
         document.getElementById('results').textContent = state.results || "Ready";
     }
 
-    // Set last result for UI components
     setLastResult({
         success: state.status.includes('success'),
         details: state.results,
         tabular: state.tabular || null
     });
     
-    // Set other controls with null checks
     document.getElementById('algorithm').value = state.algorithm || "auto";
     document.getElementById('runmode').value = state.runMode || "balance";
     document.getElementById('target-num').value = state.targetNum || 0;
@@ -99,10 +94,8 @@ function applyAppState(state) {
     document.getElementById('float-tolerance').value = state.floatTolerance || 8;
     document.getElementById('max-comb').value = state.maxComb || 15;
     
-    // Set results with default
     document.getElementById('results').textContent = state.results || "Ready";
     
-    // Set status with defaults
     const statusClass = state.status || "w-3 h-3 bg-gray-500 rounded-full";
     const statusMsg = state.statusMessage || "Ready";
     document.getElementById('status-indicator').className = statusClass;
@@ -110,7 +103,6 @@ function applyAppState(state) {
     document.getElementById('status-indicator-spoiler').className = statusClass;
     document.getElementById('status-text-spoiler').textContent = statusMsg;
     
-    // Set spoiler state
     const spoilerContent = document.getElementById('results-spoiler-content');
     const spoilerIcon = document.getElementById('results-spoiler-icon');
     if (state.spoilerOpen) {
@@ -121,15 +113,12 @@ function applyAppState(state) {
         spoilerIcon.style.transform = 'rotate(0deg)';
     }
     
-    // Update UI components
     handleModeChange();
     makeResultsAdaptive();
 
-    // Force spoiler update after setting mode
     const isMassesSuccess = state.mode === 'masses' && state.tabular;
     updateResultsSpoiler(state.mode, isMassesSuccess);
     
-    // Apply saved spoiler state if applicable
     if (isMassesSuccess) {
         const spoilerContent = document.getElementById('results-spoiler-content');
         const spoilerIcon = document.getElementById('results-spoiler-icon');
@@ -140,8 +129,19 @@ function applyAppState(state) {
     }
 }
 
+function showAboutDialog() {
+    ShowAboutDialog().catch(error => {
+        console.error('Error showing about dialog:', error);
+    });
+}
+
+function showHowToUseDialog() {
+    ShowHowToDialog().catch(error => {
+        console.error('Error showing how-to dialog:', error);
+    });
+}
+
 function initializeEventListeners() {
-    // Focus equation input
     const equationInput = document.getElementById('equation-input');
     if (equationInput) {
         equationInput.focus();
@@ -152,16 +152,15 @@ function initializeEventListeners() {
         });
     }
 
-    // Mode change listeners
     document.querySelectorAll('input[name="mode"]').forEach(radio => {
         radio.addEventListener('change', handleModeChange);
     });
 
-    // Initial mode setup
     handleModeChange();
     document.getElementById('file-save').addEventListener('click', saveState);
     document.getElementById('file-load').addEventListener('click', loadState);
-
+    document.getElementById('help-about').addEventListener('click', showAboutDialog);
+    document.getElementById('help-howto').addEventListener('click', showHowToUseDialog);
 }
 
 function initializeUI() {
@@ -170,10 +169,8 @@ function initializeUI() {
     setupKeyboardShortcuts();
     updateStatus('ready');
     
-    // Initialize button state
     updateRunButton(false);
     
-    // Check if calculation was in progress
     IsCalculating().then(calculating => {
         if (calculating) {
             updateRunButton(true);
@@ -181,7 +178,6 @@ function initializeUI() {
         }
     });
     
-    // Setup adaptive layout
     window.addEventListener('resize', makeResultsAdaptive);
     new ResizeObserver(makeResultsAdaptive).observe(document.body);
 }

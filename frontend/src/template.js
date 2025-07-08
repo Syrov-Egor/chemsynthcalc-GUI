@@ -13,9 +13,15 @@ export const appTemplate = `
                             <button id="file-load" class="block w-full text-left px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">Load</button>
                         </div>
                     </div>
-                    <button type="button" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                        Help
-                    </button>
+                   <div class="relative group">
+    <button type="button" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+        Help
+    </button>
+    <div class="absolute hidden group-hover:block bg-gray-800 rounded-md shadow-lg z-10 w-32 border border-gray-700">
+        <button id="help-about" class="block w-full text-left px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">About</button>
+        <button id="help-howto" class="block w-full text-left px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">How to use</button>
+    </div>
+</div>
                 </div>
                 <div class="text-xl font-bold text-primary-400">
                     ChemSynthCalc v0.1.0
@@ -157,7 +163,7 @@ export const appTemplate = `
                                         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
                                     </svg>
                                 </span>
-                                <h3 class="text-lg font-semibold text-gray-200">Mass Calculation Results</h3>
+                                <h3 class="text-lg font-semibold text-gray-200">Results</h3>
                             </div>
                             <div class="flex items-center space-x-2">
                                 <div id="status-indicator-spoiler" class="w-3 h-3 bg-green-500 rounded-full"></div>
