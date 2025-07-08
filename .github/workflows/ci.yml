@@ -2,8 +2,6 @@ name: Wails build
 
 on:
   push:
-    tags:
-      - '*'
 
 env:
   NODE_OPTIONS: "--max-old-space-size=4096"
@@ -14,10 +12,10 @@ jobs:
       fail-fast: false
       matrix:
         build:
-          - name: 'chemsynthcalc'
+          - name: 'chemsynthcalc-lin'
             platform:  'linux/amd64'
             os: 'ubuntu-latest'
-          - name: 'chemsynthcalc'
+          - name: 'chemsynthcalc-win'
             platform:  'windows/amd64'
             os: 'windows-latest'
           - name: 'chemsynthcalc'
@@ -43,8 +41,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.build.name }}-${{ matrix.build.platform }}
+          name: ${{ matrix.build.name }}
           path: |
             build/bin/*
-            build/package/*
-          retention-days: 5
+          retention-days: 7
