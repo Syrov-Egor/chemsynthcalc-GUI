@@ -14,13 +14,13 @@ jobs:
       fail-fast: false
       matrix:
         build:
-          - name: 'chemsynthcalc-linux'
+          - name: 'chemsynthcalc'
             platform:  'linux/amd64'
             os: 'ubuntu-latest'
-          - name: 'chemsynthcalc-win'
+          - name: 'chemsynthcalc'
             platform:  'windows/amd64'
             os: 'windows-latest'
-          - name: 'chemsynthcalc-mac'
+          - name: 'chemsynthcalc'
             platform:  'darwin/universal'
             os: 'macos-latest'
 
