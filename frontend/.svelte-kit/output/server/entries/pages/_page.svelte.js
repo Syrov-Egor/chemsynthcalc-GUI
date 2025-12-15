@@ -8134,127 +8134,84 @@ function EquationInput($$renderer, $$props) {
     bind_props($$props, { textInput });
   });
 }
-class WasmManager {
-  worker = null;
-  loaded = false;
-  loading = false;
-  messageHandlers = /* @__PURE__ */ new Map();
+function IsCalculating() {
+  return window["go"]["main"]["App"]["IsCalculating"]();
+}
+function PerformCalculation(arg1) {
+  return window["go"]["main"]["App"]["PerformCalculation"](arg1);
+}
+function StopCalculation() {
+  return window["go"]["main"]["App"]["StopCalculation"]();
+}
+class WailsCalculationService {
+  isLoading = false;
   currentCalculation = null;
   get isLoaded() {
-    return this.loaded;
+    return true;
   }
-  get isLoading() {
-    return this.loading;
-  }
-  async load() {
-    if (this.loaded || this.loading) {
-      return;
-    }
-    this.loading = true;
+  get isCalculating() {
     try {
-      this.worker = new Worker(new URL("./wasm.worker.ts", import.meta.url), { type: "module" });
-      this.worker.onmessage = (event) => {
-        const response = event.data;
-        const handler = this.messageHandlers.get(response.type);
-        if (handler) {
-          handler(response);
-        }
-      };
-      this.worker.onerror = (error) => {
-        console.error("Worker error:", error);
-        if (this.currentCalculation) {
-          this.currentCalculation.reject(new Error(`Worker error: ${error.message}`));
-          this.currentCalculation = null;
-        }
-      };
-      await this.initWorker();
-      this.loaded = true;
+      return IsCalculating();
     } catch (error) {
-      console.error("Failed to initialize Web Worker:", error);
-      throw error;
-    } finally {
-      this.loading = false;
+      console.warn("Failed to check calculation status:", error);
+      return false;
     }
   }
-  initWorker() {
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(
-        () => {
-          reject(new Error("Worker initialization timeout"));
-        },
-        12e4
-      );
-      this.messageHandlers.set("ready", () => {
-        clearTimeout(timeout);
-        this.messageHandlers.delete("ready");
-        resolve();
-      });
-      this.worker?.postMessage({ type: "init" });
-    });
+  canCalculate() {
+    return !this.isLoading && !this.isCalculating;
   }
   async calculate(params) {
     if (this.currentCalculation) {
       this.currentCalculation.reject(new Error("New calculation started before previous completed"));
       this.currentCalculation = null;
     }
-    if (!this.loaded) {
-      await this.load();
-    }
     return new Promise((resolve, reject) => {
-      const timeout = setTimeout(
-        () => {
-          if (this.currentCalculation) {
-            this.currentCalculation.reject(new Error("Calculation timeout"));
-            this.currentCalculation = null;
-          }
-        },
-        3e6
-      );
+      const timeout = setTimeout(() => {
+        if (this.currentCalculation) {
+          this.currentCalculation.reject(new Error("Calculation timeout"));
+          this.currentCalculation = null;
+        }
+      }, 3e6);
       this.currentCalculation = { resolve, reject };
-      const resultHandler = (response) => {
+      this.isLoading = true;
+      PerformCalculation(params).then((result) => {
         clearTimeout(timeout);
-        this.messageHandlers.delete("result");
-        this.messageHandlers.delete("error");
+        this.isLoading = false;
         this.currentCalculation = null;
-        if (response.type === "result") {
-          resolve(response.result);
-        }
-      };
-      const errorHandler = (response) => {
+        resolve(JSON.stringify(result));
+      }).catch((error) => {
         clearTimeout(timeout);
-        this.messageHandlers.delete("result");
-        this.messageHandlers.delete("error");
+        this.isLoading = false;
         this.currentCalculation = null;
-        if (response.type === "error") {
-          reject(new Error(response.error));
-        }
-      };
-      this.messageHandlers.set("result", resultHandler);
-      this.messageHandlers.set("error", errorHandler);
-      this.worker?.postMessage({ type: "calculate", params });
+        const errorResult = {
+          success: false,
+          message: error.message || "Calculation failed",
+          details: "",
+          cancelled: false
+        };
+        resolve(JSON.stringify(errorResult));
+      });
     });
   }
   abort() {
-    this.terminate();
+    try {
+      StopCalculation();
+    } catch (error) {
+      console.error("Failed to stop calculation:", error);
+    }
     if (this.currentCalculation) {
       this.currentCalculation.reject(new Error("Calculation aborted by user"));
       this.currentCalculation = null;
     }
   }
   terminate() {
-    if (this.worker) {
-      this.worker.terminate();
-      this.worker = null;
-      this.loaded = false;
-      this.loading = false;
+    if (this.isCalculating) {
+      this.abort();
     }
-  }
-  // Add a method to check if we can calculate
-  canCalculate() {
-    return !this.loading && !this.currentCalculation;
+    this.isLoading = false;
   }
 }
-const wasmManager = new WasmManager();
+const wailsService = new WailsCalculationService();
 class CalculationManager {
   isCalculating = false;
   parsedResult = null;
@@ -8271,8 +8228,19 @@ class CalculationManager {
     this.parsedResult = null;
     this.calculationError = null;
     try {
-      const params = { ...controlInput, equation: textInput };
-      const result = await wasmManager.calculate(params);
+      const params = {
+        equation: textInput,
+        mode: controlInput.mode,
+        algorithm: controlInput.algorithm,
+        runMode: controlInput.runMode,
+        targetNum: controlInput.targetNumber,
+        targetMass: controlInput.targetMass,
+        intify: controlInput.intify,
+        outputPrecision: controlInput.outputPrecision,
+        floatTolerance: controlInput.floatTolerance,
+        maxComb: controlInput.maxCombinations
+      };
+      const result = await wailsService.calculate(params);
       if (this.shouldAbort) {
         return;
       }
@@ -8309,7 +8277,7 @@ class CalculationManager {
     }
   }
   abort() {
-    wasmManager.abort();
+    wailsService.abort();
   }
   // Reset the manager state
   reset() {
@@ -8317,7 +8285,7 @@ class CalculationManager {
     this.parsedResult = null;
     this.calculationError = null;
     this.shouldAbort = false;
-    wasmManager.terminate();
+    wailsService.terminate();
   }
 }
 const calculationManager = new CalculationManager();
@@ -8332,16 +8300,9 @@ function RunButton($$renderer, $$props) {
       onclick: onClickButtonRun,
       color: calculationManager.isCalculating ? "red" : "green",
       class: calculationManager.isCalculating ? "calculating" : "",
-      disabled: wasmManager.isLoading,
+      disabled: wailsService.isLoading,
       children: ($$renderer3) => {
-        $$renderer3.push(`<span id="button-text">${escape_html(calculationManager.isCalculating ? "Stop" : "Run")}</span> `);
-        if (wasmManager.isLoading) {
-          $$renderer3.push("<!--[-->");
-          $$renderer3.push(`<span class="loading-indicator">(Loading WASM...)</span>`);
-        } else {
-          $$renderer3.push("<!--[!-->");
-        }
-        $$renderer3.push(`<!--]-->`);
+        $$renderer3.push(`<span id="button-text">${escape_html(calculationManager.isCalculating ? "Stop" : "Run")}</span>`);
       },
       $$slots: { default: true }
     });

@@ -2,7 +2,7 @@
     import { Button } from "flowbite-svelte";
 
     import { calculationManager } from "./scripts/buttonRun.svelte";
-    import { wasmManager } from "./scripts/wasm.svelte";
+    import { wailsService } from "./scripts/wailsService";
 
     let { controlInput, textInput } = $props();
 
@@ -24,12 +24,9 @@
     onclick={onClickButtonRun}
     color={calculationManager.isCalculating ? "red" : "green"}
     class={calculationManager.isCalculating ? "calculating" : ""}
-    disabled={wasmManager.isLoading}
+    disabled={wailsService.isLoading}
 >
     <span id="button-text">
         {calculationManager.isCalculating ? "Stop" : "Run"}
     </span>
-    {#if wasmManager.isLoading}
-        <span class="loading-indicator">(Loading WASM...)</span>
-    {/if}
 </Button>

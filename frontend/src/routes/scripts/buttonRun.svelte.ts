@@ -1,4 +1,4 @@
-import { wasmManager } from "./wasm.svelte";
+import { wailsService } from "./wailsService";
 
 class CalculationManager {
     public isCalculating = $state(false)
@@ -21,13 +21,22 @@ class CalculationManager {
         this.calculationError = null
 
         try {
+            // Map controlInput properties to match CalculationParams interface
             const params = {
-                ...controlInput,
-                equation: textInput
+                equation: textInput,
+                mode: (controlInput as any).mode,
+                algorithm: (controlInput as any).algorithm,
+                runMode: (controlInput as any).runMode,
+                targetNum: (controlInput as any).targetNumber,
+                targetMass: (controlInput as any).targetMass,
+                intify: (controlInput as any).intify,
+                outputPrecision: (controlInput as any).outputPrecision,
+                floatTolerance: (controlInput as any).floatTolerance,
+                maxComb: (controlInput as any).maxCombinations,
             }
 
-            // Run calculation in Web Worker
-            const result = await wasmManager.calculate(params)
+            // Run calculation via Wails Go binding
+            const result = await wailsService.calculate(params)
 
             // Check if we aborted during the calculation
             if (this.shouldAbort) {
@@ -69,7 +78,7 @@ class CalculationManager {
     }
 
     private abort() {
-        wasmManager.abort()
+        wailsService.abort()
     }
 
     // Reset the manager state
@@ -78,7 +87,7 @@ class CalculationManager {
         this.parsedResult = null
         this.calculationError = null
         this.shouldAbort = false
-        wasmManager.terminate()
+        wailsService.terminate()
     }
 }
 
