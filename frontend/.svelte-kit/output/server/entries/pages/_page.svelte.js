@@ -7497,73 +7497,93 @@ function GithubSolid($$renderer, $$props) {
   });
 }
 const version = "0.1.5";
-function TopNavBar($$renderer) {
-  const downloadLink = "https://github.com/Syrov-Egor/chemsynthcalc-GUI/releases";
-  const wikiLink = "https://github.com/Syrov-Egor/chemsynthcalc-GUI/wiki";
-  const githubLink = "https://github.com/Syrov-Egor/chemsynthcalc-web";
-  Navbar($$renderer, {
-    fluid: true,
-    class: "p-0 sm:px-0",
-    children: ($$renderer2) => {
-      NavHamburger($$renderer2, {});
-      $$renderer2.push(`<!----> `);
-      NavUl($$renderer2, {
-        children: ($$renderer3) => {
-          NavLi($$renderer3, {
-            href: wikiLink,
-            children: ($$renderer4) => {
-              P($$renderer4, {
-                children: ($$renderer5) => {
-                  $$renderer5.push(`<!---->How to use`);
-                },
-                $$slots: { default: true }
-              });
-            },
-            $$slots: { default: true }
-          });
-          $$renderer3.push(`<!----> `);
-          NavLi($$renderer3, {
-            href: downloadLink,
-            children: ($$renderer4) => {
-              P($$renderer4, {
-                children: ($$renderer5) => {
-                  $$renderer5.push(`<!---->Download desktop app`);
-                },
-                $$slots: { default: true }
-              });
-            },
-            $$slots: { default: true }
-          });
-          $$renderer3.push(`<!----> `);
-          NavLi($$renderer3, {
-            href: githubLink,
-            children: ($$renderer4) => {
-              GithubSolid($$renderer4, { class: "shrink-0 h-7 w-7" });
-            },
-            $$slots: { default: true }
-          });
-          $$renderer3.push(`<!----> `);
-          NavLi($$renderer3, {
-            children: ($$renderer4) => {
-              P($$renderer4, {
-                class: "text-emerald-700 dark:text-emerald-500",
-                children: ($$renderer5) => {
-                  $$renderer5.push(`<!---->chemsynthcalc ${escape_html(version)}`);
-                },
-                $$slots: { default: true }
-              });
-            },
-            $$slots: { default: true }
-          });
-          $$renderer3.push(`<!----> `);
-          DarkMode($$renderer3, {});
-          $$renderer3.push(`<!---->`);
-        },
-        $$slots: { default: true }
-      });
-      $$renderer2.push(`<!---->`);
-    },
-    $$slots: { default: true }
+function BrowserOpenURL(url) {
+  window.runtime.BrowserOpenURL(url);
+}
+function TopNavBar($$renderer, $$props) {
+  $$renderer.component(($$renderer2) => {
+    const downloadLink = "https://github.com/Syrov-Egor/chemsynthcalc-GUI/releases";
+    const wikiLink = "https://github.com/Syrov-Egor/chemsynthcalc-GUI/wiki";
+    const githubLink = "https://github.com/Syrov-Egor/chemsynthcalc-web";
+    function openExternal(url) {
+      BrowserOpenURL(url);
+    }
+    Navbar($$renderer2, {
+      fluid: true,
+      class: "p-0 sm:px-0",
+      children: ($$renderer3) => {
+        NavHamburger($$renderer3, {});
+        $$renderer3.push(`<!----> `);
+        NavUl($$renderer3, {
+          children: ($$renderer4) => {
+            NavLi($$renderer4, {
+              href: "#",
+              onclick: (e) => {
+                e.preventDefault();
+                openExternal(wikiLink);
+              },
+              children: ($$renderer5) => {
+                P($$renderer5, {
+                  children: ($$renderer6) => {
+                    $$renderer6.push(`<!---->How to use`);
+                  },
+                  $$slots: { default: true }
+                });
+              },
+              $$slots: { default: true }
+            });
+            $$renderer4.push(`<!----> `);
+            NavLi($$renderer4, {
+              href: "#",
+              onclick: (e) => {
+                e.preventDefault();
+                openExternal(downloadLink);
+              },
+              children: ($$renderer5) => {
+                P($$renderer5, {
+                  children: ($$renderer6) => {
+                    $$renderer6.push(`<!---->Download desktop app`);
+                  },
+                  $$slots: { default: true }
+                });
+              },
+              $$slots: { default: true }
+            });
+            $$renderer4.push(`<!----> `);
+            NavLi($$renderer4, {
+              href: "#",
+              onclick: (e) => {
+                e.preventDefault();
+                openExternal(githubLink);
+              },
+              children: ($$renderer5) => {
+                GithubSolid($$renderer5, { class: "shrink-0 h-7 w-7" });
+              },
+              $$slots: { default: true }
+            });
+            $$renderer4.push(`<!----> `);
+            NavLi($$renderer4, {
+              children: ($$renderer5) => {
+                P($$renderer5, {
+                  class: "text-emerald-700 dark:text-emerald-500",
+                  children: ($$renderer6) => {
+                    $$renderer6.push(`<!---->chemsynthcalc ${escape_html(version)}`);
+                  },
+                  $$slots: { default: true }
+                });
+              },
+              $$slots: { default: true }
+            });
+            $$renderer4.push(`<!----> `);
+            DarkMode($$renderer4, {});
+            $$renderer4.push(`<!---->`);
+          },
+          $$slots: { default: true }
+        });
+        $$renderer3.push(`<!---->`);
+      },
+      $$slots: { default: true }
+    });
   });
 }
 function Algorithm($$renderer, $$props) {
