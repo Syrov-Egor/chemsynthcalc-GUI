@@ -833,6 +833,9 @@ function spread_props(props) {
   }
   return merged_props;
 }
+function stringify(value) {
+  return typeof value === "string" ? value : value == null ? "" : value + "";
+}
 function attr_class(value, hash, directives) {
   var result = to_class(value, hash, directives);
   return result ? ` class="${escape_html(result, true)}"` : "";
@@ -859,14 +862,15 @@ export {
   DIRTY as D,
   ERROR_VALUE as E,
   attr_class as F,
-  spread_props as G,
+  stringify as G,
   HYDRATION_ERROR as H,
   INERT as I,
-  element as J,
+  spread_props as J,
   bind_props as K,
   LEGACY_PROPS as L,
   MAYBE_DIRTY as M,
-  ensure_array_like as N,
+  element as N,
+  ensure_array_like as O,
   ROOT_EFFECT as R,
   STATE_SYMBOL as S,
   UNOWNED as U,

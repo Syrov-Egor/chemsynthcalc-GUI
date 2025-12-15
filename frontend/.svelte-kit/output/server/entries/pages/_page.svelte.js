@@ -1,7 +1,8 @@
 import clsx$1, { clsx as clsx$2 } from "clsx";
 import { s as setContext, j as getContext, k as escape_html } from "../../chunks/context.js";
 import { tv } from "tailwind-variants";
-import { y as attributes, z as clsx, F as attr_class, G as spread_props, J as element, w as head, K as bind_props, x as attr, N as ensure_array_like } from "../../chunks/index.js";
+import { y as attributes, z as clsx, F as attr_class, G as stringify, J as spread_props, K as bind_props, N as element, w as head, x as attr, O as ensure_array_like } from "../../chunks/index.js";
+import * as dom from "@floating-ui/dom";
 import { twMerge } from "tailwind-merge";
 function html(value) {
   var html2 = String(value);
@@ -155,9 +156,19 @@ function CloseButton($$renderer, $$props) {
     $$renderer2.push(`<!--]-->`);
   });
 }
+const linear = (x) => x;
 function cubic_out(t) {
   const f = t - 1;
   return f * f * f + 1;
+}
+function fade(node, { delay = 0, duration = 400, easing = linear } = {}) {
+  const o = +getComputedStyle(node).opacity;
+  return {
+    delay,
+    duration,
+    easing,
+    css: (t) => `opacity: ${t * o}`
+  };
 }
 function slide(node, { delay = 0, duration = 400, easing = cubic_out, axis = "y" } = {}) {
   const style = getComputedStyle(node);
@@ -187,6 +198,75 @@ function slide(node, { delay = 0, duration = 400, easing = cubic_out, axis = "y"
     easing,
     css: (t) => `overflow: hidden;opacity: ${Math.min(t * 20, 1) * opacity};${primary_property}: ${t * primary_property_value}px;padding-${secondary_properties[0]}: ${t * padding_start_value}px;padding-${secondary_properties[1]}: ${t * padding_end_value}px;margin-${secondary_properties[0]}: ${t * margin_start_value}px;margin-${secondary_properties[1]}: ${t * margin_end_value}px;border-${secondary_properties[0]}-width: ${t * border_width_start_value}px;border-${secondary_properties[1]}-width: ${t * border_width_end_value}px;min-${primary_property}: 0`
   };
+}
+function Arrow($$renderer, $$props) {
+  $$renderer.component(($$renderer2) => {
+    let { placement = "top", cords, class: className = "" } = $$props;
+    $$renderer2.push(`<div${attr_class(`popover-arrow clip pointer-events-none absolute block h-[10px] w-[10px] border-b border-l border-inherit bg-inherit text-inherit ${stringify(className)}`)}></div>`);
+  });
+}
+function Popper($$renderer, $$props) {
+  $$renderer.component(($$renderer2) => {
+    const DEFAULT_TRIGGER_DELAY = 200;
+    const DEFAULT_OFFSET = 8;
+    let {
+      triggeredBy,
+      triggerDelay = DEFAULT_TRIGGER_DELAY,
+      trigger = "click",
+      placement = "top",
+      offset = DEFAULT_OFFSET,
+      arrow = false,
+      yOnly = false,
+      strategy = "absolute",
+      role = "tooltip",
+      reference,
+      middlewares = [dom.flip(), dom.shift()],
+      class: className = "",
+      arrowClass = "",
+      isOpen = false,
+      transitionParams,
+      transition = fade,
+      onbeforetoggle,
+      ontoggle,
+      onclose,
+      children,
+      $$slots,
+      $$events,
+      ...restProps
+    } = $$props;
+    let arrowParams = { placement, cords: { x: 0, y: 0 } };
+    (() => {
+      const base = [...middlewares, dom.offset(offset)];
+      return base;
+    })();
+    $$renderer2.push(`<div hidden=""></div> `);
+    if (isOpen) {
+      $$renderer2.push("<!--[-->");
+      $$renderer2.push(`<div${attributes(
+        {
+          popover: "manual",
+          role,
+          class: clsx(clsx$1(className)),
+          ...restProps
+        },
+        void 0,
+        { "overflow-visible": true }
+      )}>`);
+      children($$renderer2);
+      $$renderer2.push(`<!----> `);
+      if (arrow) {
+        $$renderer2.push("<!--[-->");
+        Arrow($$renderer2, spread_props([arrowParams, { class: arrowClass }]));
+      } else {
+        $$renderer2.push("<!--[!-->");
+      }
+      $$renderer2.push(`<!--]--></div>`);
+    } else {
+      $$renderer2.push("<!--[!-->");
+    }
+    $$renderer2.push(`<!--]-->`);
+    bind_props($$props, { isOpen });
+  });
 }
 function getTheme(componentKey) {
   const theme = getContext("theme");
@@ -2143,7 +2223,7 @@ tv({
     }
   }
 });
-tv({
+const dropdown = tv({
   base: "mt-2 divide-y divide-gray-300 dark:divide-gray-500 overflow-hidden rounded-lg bg-white shadow-sm dark:bg-gray-700"
 });
 tv({
@@ -2152,16 +2232,138 @@ tv({
 tv({
   base: "px-4 py-3 text-sm text-gray-900 dark:text-white"
 });
-tv({
+const dropdownItem = tv({
   slots: {
     base: "block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white",
     active: "block px-4 py-2 text-primary-700 dark:text-primary-600 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white",
     li: ""
   }
 });
-tv({
+const dropdownGroup = tv({
   base: "py-2 text-sm text-gray-700 dark:text-gray-200"
 });
+function DropdownGroup($$renderer, $$props) {
+  $$renderer.component(($$renderer2) => {
+    let { children, class: className, $$slots, $$events, ...restProps } = $$props;
+    const theme = getTheme("dropdownGroup");
+    $$renderer2.push(`<ul${attributes({
+      ...restProps,
+      class: clsx(dropdownGroup({ class: clsx$1(theme, className) }))
+    })}>`);
+    children($$renderer2);
+    $$renderer2.push(`<!----></ul>`);
+  });
+}
+function Dropdown($$renderer, $$props) {
+  $$renderer.component(($$renderer2) => {
+    let {
+      children,
+      simple = false,
+      placement = "bottom",
+      offset = 2,
+      class: className,
+      activeUrl = "",
+      isOpen = false,
+      onclose,
+      $$slots,
+      $$events,
+      ...restProps
+    } = $$props;
+    const theme = getTheme("dropdown");
+    const base = dropdown({ class: clsx$1(theme, className) });
+    const activeUrlStore = { value: "" };
+    setContext("activeUrl", activeUrlStore);
+    let $$settled = true;
+    let $$inner_renderer;
+    function $$render_inner($$renderer3) {
+      Popper($$renderer3, spread_props([
+        restProps,
+        {
+          placement,
+          offset,
+          class: base,
+          get isOpen() {
+            return isOpen;
+          },
+          set isOpen($$value) {
+            isOpen = $$value;
+            $$settled = false;
+          },
+          children: ($$renderer4) => {
+            if (simple) {
+              $$renderer4.push("<!--[-->");
+              DropdownGroup($$renderer4, {
+                children: ($$renderer5) => {
+                  children($$renderer5);
+                  $$renderer5.push(`<!---->`);
+                },
+                $$slots: { default: true }
+              });
+            } else {
+              $$renderer4.push("<!--[!-->");
+              children($$renderer4);
+              $$renderer4.push(`<!---->`);
+            }
+            $$renderer4.push(`<!--]-->`);
+          },
+          $$slots: { default: true }
+        }
+      ]));
+    }
+    do {
+      $$settled = true;
+      $$inner_renderer = $$renderer2.copy();
+      $$render_inner($$inner_renderer);
+    } while (!$$settled);
+    $$renderer2.subsume($$inner_renderer);
+    bind_props($$props, { isOpen });
+  });
+}
+function DropdownItem($$renderer, $$props) {
+  $$renderer.component(($$renderer2) => {
+    let {
+      aClass,
+      children,
+      activeClass,
+      liClass,
+      classes,
+      class: className,
+      href,
+      onclick,
+      $$slots,
+      $$events,
+      ...restProps
+    } = $$props;
+    const styling = classes ?? { active: activeClass, li: liClass };
+    const theme = getTheme("dropdownItem");
+    const activeUrl = getContext("activeUrl");
+    let isActive = activeUrl?.value && href ? href === activeUrl.value : false;
+    const { base, active, li } = dropdownItem();
+    let finalClass = isActive ? active({ class: clsx$1(theme?.active, styling.active) }) : base({ class: clsx$1(theme?.base, className) });
+    $$renderer2.push(`<li${attr_class(clsx(li({ class: clsx$1(styling.li) })))}>`);
+    if (href) {
+      $$renderer2.push("<!--[-->");
+      $$renderer2.push(`<a${attributes({ href, ...restProps, class: clsx(finalClass) })}>`);
+      children($$renderer2);
+      $$renderer2.push(`<!----></a>`);
+    } else {
+      $$renderer2.push("<!--[!-->");
+      if (onclick) {
+        $$renderer2.push("<!--[-->");
+        $$renderer2.push(`<button${attributes({ type: "button", ...restProps, class: clsx(finalClass) })}>`);
+        children($$renderer2);
+        $$renderer2.push(`<!----></button>`);
+      } else {
+        $$renderer2.push("<!--[!-->");
+        $$renderer2.push(`<div${attributes({ ...restProps, class: clsx(finalClass) })}>`);
+        children($$renderer2);
+        $$renderer2.push(`<!----></div>`);
+      }
+      $$renderer2.push(`<!--]-->`);
+    }
+    $$renderer2.push(`<!--]--></li>`);
+  });
+}
 tv({
   base: "bg-white dark:bg-gray-800",
   variants: {
@@ -7440,6 +7642,122 @@ tv({
 function cn(...inputs) {
   return twMerge(clsx$2(inputs));
 }
+function ChevronDownOutline($$renderer, $$props) {
+  $$renderer.component(($$renderer2) => {
+    const ctx = getContext("iconCtx") ?? {};
+    const sizes = {
+      xs: "w-3 h-3",
+      sm: "w-4 h-4",
+      md: "w-5 h-5",
+      lg: "w-6 h-6",
+      xl: "w-8 h-8"
+    };
+    let {
+      size = ctx.size || "md",
+      color = ctx.color || "currentColor",
+      title,
+      strokeWidth = ctx.strokeWidth || 2,
+      desc,
+      class: className,
+      ariaLabel,
+      $$slots,
+      $$events,
+      ...restProps
+    } = $$props;
+    let ariaDescribedby = `${title?.id || ""} ${desc?.id || ""}`.trim();
+    const hasDescription = !!(title?.id || desc?.id);
+    const isLabeled = !!ariaLabel || hasDescription;
+    $$renderer2.push(`<svg${attributes(
+      {
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "none",
+        color,
+        ...restProps,
+        class: clsx(cn("shrink-0", sizes[size], className)),
+        viewBox: "0 0 24 24",
+        "aria-label": ariaLabel,
+        "aria-describedby": hasDescription ? ariaDescribedby : void 0,
+        "aria-hidden": !isLabeled
+      },
+      void 0,
+      void 0,
+      void 0,
+      3
+    )}>`);
+    if (title?.id && title.title) {
+      $$renderer2.push("<!--[-->");
+      $$renderer2.push(`<title${attr("id", title.id)}>${escape_html(title.title)}</title>`);
+    } else {
+      $$renderer2.push("<!--[!-->");
+    }
+    $$renderer2.push(`<!--]-->`);
+    if (desc?.id && desc.desc) {
+      $$renderer2.push("<!--[-->");
+      $$renderer2.push(`<desc${attr("id", desc.id)}>${escape_html(desc.desc)}</desc>`);
+    } else {
+      $$renderer2.push("<!--[!-->");
+    }
+    $$renderer2.push(`<!--]--><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"${attr("stroke-width", strokeWidth)} d="m8 10 4 4 4-4"></path></svg>`);
+  });
+}
+function ChevronRightOutline($$renderer, $$props) {
+  $$renderer.component(($$renderer2) => {
+    const ctx = getContext("iconCtx") ?? {};
+    const sizes = {
+      xs: "w-3 h-3",
+      sm: "w-4 h-4",
+      md: "w-5 h-5",
+      lg: "w-6 h-6",
+      xl: "w-8 h-8"
+    };
+    let {
+      size = ctx.size || "md",
+      color = ctx.color || "currentColor",
+      title,
+      strokeWidth = ctx.strokeWidth || 2,
+      desc,
+      class: className,
+      ariaLabel,
+      $$slots,
+      $$events,
+      ...restProps
+    } = $$props;
+    let ariaDescribedby = `${title?.id || ""} ${desc?.id || ""}`.trim();
+    const hasDescription = !!(title?.id || desc?.id);
+    const isLabeled = !!ariaLabel || hasDescription;
+    $$renderer2.push(`<svg${attributes(
+      {
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "none",
+        color,
+        ...restProps,
+        class: clsx(cn("shrink-0", sizes[size], className)),
+        viewBox: "0 0 24 24",
+        "aria-label": ariaLabel,
+        "aria-describedby": hasDescription ? ariaDescribedby : void 0,
+        "aria-hidden": !isLabeled
+      },
+      void 0,
+      void 0,
+      void 0,
+      3
+    )}>`);
+    if (title?.id && title.title) {
+      $$renderer2.push("<!--[-->");
+      $$renderer2.push(`<title${attr("id", title.id)}>${escape_html(title.title)}</title>`);
+    } else {
+      $$renderer2.push("<!--[!-->");
+    }
+    $$renderer2.push(`<!--]-->`);
+    if (desc?.id && desc.desc) {
+      $$renderer2.push("<!--[-->");
+      $$renderer2.push(`<desc${attr("id", desc.id)}>${escape_html(desc.desc)}</desc>`);
+    } else {
+      $$renderer2.push("<!--[!-->");
+    }
+    $$renderer2.push(`<!--]--><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"${attr("stroke-width", strokeWidth)} d="m10 16 4-4-4-4"></path></svg>`);
+  });
+}
 function GithubSolid($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     const ctx = getContext("iconCtx") ?? {};
@@ -7500,14 +7818,13 @@ const version = "0.1.5";
 function BrowserOpenURL(url) {
   window.runtime.BrowserOpenURL(url);
 }
+function Quit() {
+  window.runtime.Quit();
+}
 function TopNavBar($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
-    const downloadLink = "https://github.com/Syrov-Egor/chemsynthcalc-GUI/releases";
     const wikiLink = "https://github.com/Syrov-Egor/chemsynthcalc-GUI/wiki";
     const githubLink = "https://github.com/Syrov-Egor/chemsynthcalc-web";
-    function openExternal(url) {
-      BrowserOpenURL(url);
-    }
     Navbar($$renderer2, {
       fluid: true,
       class: "p-0 sm:px-0",
@@ -7517,10 +7834,130 @@ function TopNavBar($$renderer, $$props) {
         NavUl($$renderer3, {
           children: ($$renderer4) => {
             NavLi($$renderer4, {
-              href: "#",
+              class: "cursor-pointer",
+              children: ($$renderer5) => {
+                $$renderer5.push(`<div class="flex items-center gap-x-1">`);
+                P($$renderer5, {
+                  children: ($$renderer6) => {
+                    $$renderer6.push(`<!---->File`);
+                  },
+                  $$slots: { default: true }
+                });
+                $$renderer5.push(`<!---->`);
+                ChevronDownOutline($$renderer5, {});
+                $$renderer5.push(`<!----></div>`);
+              },
+              $$slots: { default: true }
+            });
+            $$renderer4.push(`<!----> `);
+            Dropdown($$renderer4, {
+              children: ($$renderer5) => {
+                DropdownItem($$renderer5, {
+                  children: ($$renderer6) => {
+                    P($$renderer6, {
+                      children: ($$renderer7) => {
+                        $$renderer7.push(`<!---->Save`);
+                      },
+                      $$slots: { default: true }
+                    });
+                  },
+                  $$slots: { default: true }
+                });
+                $$renderer5.push(`<!----> `);
+                DropdownItem($$renderer5, {
+                  children: ($$renderer6) => {
+                    P($$renderer6, {
+                      children: ($$renderer7) => {
+                        $$renderer7.push(`<!---->Load`);
+                      },
+                      $$slots: { default: true }
+                    });
+                  },
+                  $$slots: { default: true }
+                });
+                $$renderer5.push(`<!----> `);
+                DropdownItem($$renderer5, {
+                  children: ($$renderer6) => {
+                    $$renderer6.push(`<div class="flex items-center gap-x-1">`);
+                    P($$renderer6, {
+                      children: ($$renderer7) => {
+                        $$renderer7.push(`<!---->Export to...`);
+                      },
+                      $$slots: { default: true }
+                    });
+                    $$renderer6.push(`<!---->`);
+                    ChevronRightOutline($$renderer6, {});
+                    $$renderer6.push(`<!----></div> `);
+                    Dropdown($$renderer6, {
+                      placement: "right",
+                      children: ($$renderer7) => {
+                        DropdownItem($$renderer7, {
+                          children: ($$renderer8) => {
+                            P($$renderer8, {
+                              children: ($$renderer9) => {
+                                $$renderer9.push(`<!---->.txt`);
+                              },
+                              $$slots: { default: true }
+                            });
+                          },
+                          $$slots: { default: true }
+                        });
+                        $$renderer7.push(`<!----> `);
+                        DropdownItem($$renderer7, {
+                          children: ($$renderer8) => {
+                            P($$renderer8, {
+                              children: ($$renderer9) => {
+                                $$renderer9.push(`<!---->.csv`);
+                              },
+                              $$slots: { default: true }
+                            });
+                          },
+                          $$slots: { default: true }
+                        });
+                        $$renderer7.push(`<!----> `);
+                        DropdownItem($$renderer7, {
+                          children: ($$renderer8) => {
+                            P($$renderer8, {
+                              children: ($$renderer9) => {
+                                $$renderer9.push(`<!---->.xlsx`);
+                              },
+                              $$slots: { default: true }
+                            });
+                          },
+                          $$slots: { default: true }
+                        });
+                        $$renderer7.push(`<!---->`);
+                      },
+                      $$slots: { default: true }
+                    });
+                    $$renderer6.push(`<!---->`);
+                  },
+                  $$slots: { default: true }
+                });
+                $$renderer5.push(`<!----> `);
+                DropdownItem($$renderer5, {
+                  onclick: () => {
+                    Quit();
+                  },
+                  children: ($$renderer6) => {
+                    P($$renderer6, {
+                      children: ($$renderer7) => {
+                        $$renderer7.push(`<!---->Exit`);
+                      },
+                      $$slots: { default: true }
+                    });
+                  },
+                  $$slots: { default: true }
+                });
+                $$renderer5.push(`<!---->`);
+              },
+              $$slots: { default: true }
+            });
+            $$renderer4.push(`<!----> `);
+            NavLi($$renderer4, {
               onclick: (e) => {
                 e.preventDefault();
-                openExternal(wikiLink);
+                BrowserOpenURL(wikiLink);
               },
               children: ($$renderer5) => {
                 P($$renderer5, {
@@ -7534,27 +7971,9 @@ function TopNavBar($$renderer, $$props) {
             });
             $$renderer4.push(`<!----> `);
             NavLi($$renderer4, {
-              href: "#",
               onclick: (e) => {
                 e.preventDefault();
-                openExternal(downloadLink);
-              },
-              children: ($$renderer5) => {
-                P($$renderer5, {
-                  children: ($$renderer6) => {
-                    $$renderer6.push(`<!---->Download desktop app`);
-                  },
-                  $$slots: { default: true }
-                });
-              },
-              $$slots: { default: true }
-            });
-            $$renderer4.push(`<!----> `);
-            NavLi($$renderer4, {
-              href: "#",
-              onclick: (e) => {
-                e.preventDefault();
-                openExternal(githubLink);
+                BrowserOpenURL(githubLink);
               },
               children: ($$renderer5) => {
                 GithubSolid($$renderer5, { class: "shrink-0 h-7 w-7" });

@@ -215,24 +215,3 @@ func (a *App) PerformCalculation(params CalculationParams) CalculationResult {
 		return CalculationResult{}
 	}
 }
-
-func (a *App) ShowAboutDialog() (string, error) {
-	var message strings.Builder
-	name := "ChemSynthCalc v0.1.0\n"
-	body := "\nA chemical synthesis calculator for balancing equations, calculating molar masses, and determining stoichiometric mass ratios. \n\nDeveloped with Wails (https://wails.io) using Go backend with GoNum (https://www.gonum.org/) for high-performance chemistry computations.\n"
-	sign := "\nEgor Syrov, 2025"
-	message.WriteString(name)
-	message.WriteString(body)
-	message.WriteString(sign)
-	return runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
-		Title:   "About ChemSynthCalc",
-		Message: message.String(),
-		Buttons: []string{"OK"},
-		Icon:    icon,
-	})
-}
-
-func (a *App) ShowHowToDialog() {
-	wikiURL := "https://github.com/Syrov-Egor/chemsynthcalc-GUI/wiki"
-	runtime.BrowserOpenURL(a.ctx, wikiURL)
-}
