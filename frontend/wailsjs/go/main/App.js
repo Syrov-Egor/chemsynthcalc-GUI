@@ -22,6 +22,10 @@ export function SaveState(arg1) {
   return window['go']['main']['App']['SaveState'](arg1);
 }
 
+export function ShowMessageDialog(arg1, arg2, arg3) {
+  return window['go']['main']['App']['ShowMessageDialog'](arg1, arg2, arg3);
+}
+
 export function StopCalculation() {
   return window['go']['main']['App']['StopCalculation']();
 }

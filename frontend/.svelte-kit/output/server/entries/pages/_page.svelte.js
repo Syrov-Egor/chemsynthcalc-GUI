@@ -7527,6 +7527,9 @@ function PerformCalculation(arg1) {
 function SaveState(arg1) {
   return window["go"]["main"]["App"]["SaveState"](arg1);
 }
+function ShowMessageDialog(arg1, arg2, arg3) {
+  return window["go"]["main"]["App"]["ShowMessageDialog"](arg1, arg2, arg3);
+}
 function StopCalculation() {
   return window["go"]["main"]["App"]["StopCalculation"]();
 }
@@ -7756,6 +7759,14 @@ async function saveCurrentState() {
   const currentState = await new Promise((resolve) => {
     globalState.subscribe((state) => resolve(state))();
   });
+  const appState = mapFrontendToAppState(currentState);
+  const isCalculating = currentState.isCalculating;
+  const hasResults = appState.results && appState.results !== "Ready";
+  if (isCalculating || !hasResults) {
+    const errorMessage = isCalculating ? "Cannot save state while calculation is in progress. Please wait for the calculation to complete." : "Cannot save state: no calculation results available. Please run a calculation first.";
+    await ShowMessageDialog("Save State Error", errorMessage, "OK");
+    return;
+  }
   return saveState(currentState);
 }
 async function loadAndApplyState() {
@@ -7769,6 +7780,18 @@ async function exportFile(extension) {
     globalState.subscribe((state) => resolve(state))();
   });
   const appState = mapFrontendToAppState(currentState);
+  const isCalculating = currentState.isCalculating;
+  const hasResults = appState.results && appState.results !== "Ready";
+  if (isCalculating || !hasResults) {
+    const errorMessage = isCalculating ? "Cannot export file while calculation is in progress. Please wait for the calculation to complete." : "Cannot export file: no calculation results available. Please run a calculation first.";
+    await ShowMessageDialog("Export File Error", errorMessage, "OK");
+    return;
+  }
+  if (appState.mode !== "masses" && extension !== "txt") {
+    const errorMessage = "The .csv and .xlsx exports are for masses mode only";
+    await ShowMessageDialog("Export File Error", errorMessage, "OK");
+    return;
+  }
   await Export(appState, extension);
 }
 function TopNavBar($$renderer, $$props) {

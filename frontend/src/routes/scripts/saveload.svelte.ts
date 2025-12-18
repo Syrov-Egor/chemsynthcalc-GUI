@@ -1,4 +1,4 @@
-import { SaveState, LoadState, Export } from '../../../wailsjs/go/main/App';
+import { SaveState, LoadState, Export, ShowMessageDialog } from '../../../wailsjs/go/main/App';
 import * as models from '../../../wailsjs/go/models';
 import { globalState, updateGlobalState } from './globalState';
 
@@ -95,6 +95,25 @@ export async function saveCurrentState(): Promise<void> {
     const currentState = await new Promise<FrontendState>((resolve) => {
         globalState.subscribe((state) => resolve(state as FrontendState))();
     });
+
+    // Check if calculation is done
+    const appState = mapFrontendToAppState(currentState);
+    const isCalculating = currentState.isCalculating;
+    const hasResults = appState.results && appState.results !== "Ready";
+
+    if (isCalculating || !hasResults) {
+        const errorMessage = isCalculating
+            ? "Cannot save state while calculation is in progress. Please wait for the calculation to complete."
+            : "Cannot save state: no calculation results available. Please run a calculation first.";
+
+        await ShowMessageDialog(
+            "Save State Error",
+            errorMessage,
+            "OK"
+        );
+        return;
+    }
+
     return saveState(currentState);
 }
 
@@ -109,6 +128,35 @@ export async function exportFile(extension: string): Promise<void> {
     const currentState = await new Promise<FrontendState>((resolve) => {
         globalState.subscribe((state) => resolve(state as FrontendState))();
     });
+
+    // Check if calculation is done
     const appState = mapFrontendToAppState(currentState);
+    const isCalculating = currentState.isCalculating;
+    const hasResults = appState.results && appState.results !== "Ready";
+
+    if (isCalculating || !hasResults) {
+        const errorMessage = isCalculating
+            ? "Cannot export file while calculation is in progress. Please wait for the calculation to complete."
+            : "Cannot export file: no calculation results available. Please run a calculation first.";
+
+        await ShowMessageDialog(
+            "Export File Error",
+            errorMessage,
+            "OK"
+        );
+        return;
+    }
+
+    if (appState.mode !== "masses" && extension !== "txt") {
+        const errorMessage = "The .csv and .xlsx exports are for masses mode only";
+
+        await ShowMessageDialog(
+            "Export File Error",
+            errorMessage,
+            "OK"
+        );
+        return;
+    }
+
     await Export(appState, extension);
 }

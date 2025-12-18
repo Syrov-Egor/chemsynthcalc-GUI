@@ -385,3 +385,12 @@ func (a *App) exportToXLSX(state AppState) error {
 
 	return nil
 }
+
+func (a *App) ShowMessageDialog(title, message, buttonText string) (string, error) {
+	return runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+		Title:   title,
+		Message: message,
+		Buttons: []string{buttonText},
+		Icon:    icon,
+	})
+}
