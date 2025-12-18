@@ -23,14 +23,18 @@
   },
   "_exports.js": {
     "file": "chunks/exports.js",
-    "name": "exports",
+    "name": "exports"
+  },
+  "_index.js": {
+    "file": "chunks/index.js",
+    "name": "index",
     "imports": [
       "_context.js",
       "_equality.js"
     ]
   },
-  "_index.js": {
-    "file": "chunks/index.js",
+  "_index2.js": {
+    "file": "chunks/index2.js",
     "name": "index",
     "imports": [
       "_context.js"
@@ -40,7 +44,7 @@
     "file": "chunks/internal.js",
     "name": "internal",
     "imports": [
-      "_index.js",
+      "_index2.js",
       "_environment.js",
       "_context.js",
       "_equality.js"
@@ -75,7 +79,8 @@
     "imports": [
       "_context.js",
       "_exports.js",
-      "_utils.js"
+      "_utils.js",
+      "_index.js"
     ]
   },
   "node_modules/@sveltejs/kit/src/runtime/server/index.js": {
@@ -87,6 +92,7 @@
       "_environment.js",
       "_exports.js",
       "_utils.js",
+      "_index.js",
       "_internal.js",
       "_shared.js"
     ]
@@ -101,7 +107,7 @@
     "src": "src/routes/+layout.svelte",
     "isEntry": true,
     "imports": [
-      "_index.js"
+      "_index2.js"
     ],
     "css": [
       "_app/immutable/assets/_layout.BtFSoOo_.css"
@@ -123,10 +129,11 @@
     "isEntry": true,
     "imports": [
       "_context.js",
+      "_index2.js",
       "_index.js"
     ],
     "css": [
-      "_app/immutable/assets/_page.DPhsLfNO.css"
+      "_app/immutable/assets/_page.CD54FDqW.css"
     ]
   }
 }

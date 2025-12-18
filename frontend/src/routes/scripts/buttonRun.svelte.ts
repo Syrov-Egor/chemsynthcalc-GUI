@@ -1,4 +1,5 @@
 import { wailsService } from "./wailsService";
+import { updateGlobalState } from "./globalState";
 
 class CalculationManager {
     public isCalculating = $state(false)
@@ -19,6 +20,13 @@ class CalculationManager {
         this.isCalculating = true
         this.parsedResult = null
         this.calculationError = null
+
+        // Update global state
+        updateGlobalState({
+            isCalculating: true,
+            parsedResult: null,
+            calculationError: null
+        })
 
         try {
             // Map controlInput properties to match CalculationParams interface
@@ -74,6 +82,13 @@ class CalculationManager {
         } finally {
             this.isCalculating = false
             this.shouldAbort = false
+
+            // Update global state with final results
+            updateGlobalState({
+                isCalculating: false,
+                parsedResult: this.parsedResult,
+                calculationError: this.calculationError
+            })
         }
     }
 
@@ -88,6 +103,13 @@ class CalculationManager {
         this.calculationError = null
         this.shouldAbort = false
         wailsService.terminate()
+
+        // Update global state
+        updateGlobalState({
+            isCalculating: false,
+            parsedResult: null,
+            calculationError: null
+        })
     }
 }
 

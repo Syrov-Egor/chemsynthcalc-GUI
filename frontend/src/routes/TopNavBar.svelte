@@ -19,6 +19,11 @@
     import { version } from "./../../package.json" assert { type: "json" };
     import { BrowserOpenURL, Quit } from "../../wailsjs/runtime/runtime";
 
+    import {
+        saveCurrentState,
+        loadAndApplyState,
+    } from "./scripts/saveload.svelte";
+
     const wikiLink = "https://github.com/Syrov-Egor/chemsynthcalc-GUI/wiki";
     const githubLink = "https://github.com/Syrov-Egor/chemsynthcalc-web";
 </script>
@@ -32,8 +37,16 @@
             </div>
         </NavLi>
         <Dropdown>
-            <DropdownItem><P>Save</P></DropdownItem>
-            <DropdownItem><P>Load</P></DropdownItem>
+            <DropdownItem
+                onclick={() => {
+                    saveCurrentState();
+                }}><P>Save</P></DropdownItem
+            >
+            <DropdownItem
+                onclick={() => {
+                    loadAndApplyState();
+                }}><P>Load</P></DropdownItem
+            >
             <DropdownItem
                 ><div class="flex items-center gap-x-1">
                     <P>Export to...</P><ChevronRightOutline />

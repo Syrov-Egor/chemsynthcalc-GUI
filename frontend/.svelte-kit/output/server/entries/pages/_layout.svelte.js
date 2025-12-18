@@ -1,4 +1,4 @@
-import { w as head, x as attr } from "../../chunks/index.js";
+import { w as head, x as attr } from "../../chunks/index2.js";
 const favicon = "/chemsynthcalc-web/_app/immutable/assets/favicon.B5XovYGk.svg";
 function _layout($$renderer, $$props) {
   let { children } = $$props;

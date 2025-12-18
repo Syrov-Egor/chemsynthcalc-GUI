@@ -1,8 +1,9 @@
 import clsx$1, { clsx as clsx$2 } from "clsx";
 import { s as setContext, j as getContext, k as escape_html } from "../../chunks/context.js";
 import { tv } from "tailwind-variants";
-import { y as attributes, z as clsx, F as attr_class, G as stringify, J as spread_props, K as bind_props, N as element, w as head, x as attr, O as ensure_array_like } from "../../chunks/index.js";
+import { y as attributes, z as clsx, F as attr_class, G as stringify, J as spread_props, K as bind_props, N as element, w as head, x as attr, O as ensure_array_like } from "../../chunks/index2.js";
 import * as dom from "@floating-ui/dom";
+import { w as writable } from "../../chunks/index.js";
 import { twMerge } from "tailwind-merge";
 function html(value) {
   var html2 = String(value);
@@ -4033,7 +4034,7 @@ tv({
     isLast: false
   }
 });
-const table = tv({
+tv({
   slots: {
     div: "relative overflow-x-auto",
     table: "w-full text-left text-sm"
@@ -4068,7 +4069,7 @@ const table = tv({
     }
   }
 });
-const tableBodyRow = tv({
+tv({
   base: "",
   variants: {
     color: {
@@ -4318,7 +4319,7 @@ const tableBodyRow = tv({
     }
   ]
 });
-const tableHead = tv({
+tv({
   base: "text-xs uppercase",
   variants: {
     color: {
@@ -4404,10 +4405,10 @@ const tableHead = tv({
     }
   ]
 });
-const tableBodyCell = tv({
+tv({
   base: "px-6 py-4 whitespace-nowrap font-medium"
 });
-const tableHeadCell = tv({
+tv({
   base: "px-6 py-3"
 });
 tv({
@@ -4474,316 +4475,6 @@ tv({
     hoverable: false
   }
 });
-function TableHeadCell($$renderer, $$props) {
-  $$renderer.component(($$renderer2) => {
-    let { children, class: className, $$slots, $$events, ...restProps } = $$props;
-    const theme = getTheme("tableHeadCell");
-    $$renderer2.push(`<th${attributes({
-      ...restProps,
-      class: clsx(tableHeadCell({ class: clsx$1(theme, className) }))
-    })}>`);
-    if (children) {
-      $$renderer2.push("<!--[-->");
-      children($$renderer2);
-      $$renderer2.push(`<!---->`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]--></th>`);
-  });
-}
-function TableHead($$renderer, $$props) {
-  $$renderer.component(($$renderer2) => {
-    let {
-      children,
-      headerSlot,
-      color,
-      striped,
-      border,
-      class: className,
-      headItems,
-      defaultRow = true,
-      $$slots,
-      $$events,
-      ...restProps
-    } = $$props;
-    const theme = getTheme("tableHead");
-    const tableCtx = getContext("tableCtx");
-    let compoColor = color ? color : tableCtx.color || "default";
-    let compoStriped = striped ? striped : tableCtx.striped || false;
-    let compoBorder = border ? border : tableCtx.border || false;
-    const base = tableHead({
-      color: compoColor,
-      border: compoBorder,
-      striped: compoStriped,
-      class: clsx$1(theme, className)
-    });
-    function getItemText(item) {
-      if (typeof item === "object" && "text" in item) {
-        return item.text;
-      }
-      return String(item);
-    }
-    $$renderer2.push(`<thead${attributes({ ...restProps, class: clsx(base) })}>`);
-    if (headItems) {
-      $$renderer2.push("<!--[-->");
-      if (headerSlot) {
-        $$renderer2.push("<!--[-->");
-        headerSlot($$renderer2);
-        $$renderer2.push(`<!---->`);
-      } else {
-        $$renderer2.push("<!--[!-->");
-      }
-      $$renderer2.push(`<!--]--> <tr><!--[-->`);
-      const each_array = ensure_array_like(headItems);
-      for (let i = 0, $$length = each_array.length; i < $$length; i++) {
-        let item = each_array[i];
-        TableHeadCell($$renderer2, {
-          children: ($$renderer3) => {
-            $$renderer3.push(`<!---->${escape_html(getItemText(item))}`);
-          },
-          $$slots: { default: true }
-        });
-      }
-      $$renderer2.push(`<!--]--></tr>`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-      if (children) {
-        $$renderer2.push("<!--[-->");
-        if (defaultRow) {
-          $$renderer2.push("<!--[-->");
-          $$renderer2.push(`<tr>`);
-          children($$renderer2);
-          $$renderer2.push(`<!----></tr>`);
-        } else {
-          $$renderer2.push("<!--[!-->");
-          children($$renderer2);
-          $$renderer2.push(`<!---->`);
-        }
-        $$renderer2.push(`<!--]-->`);
-      } else {
-        $$renderer2.push("<!--[!-->");
-      }
-      $$renderer2.push(`<!--]-->`);
-    }
-    $$renderer2.push(`<!--]--></thead>`);
-  });
-}
-function TableBodyRow($$renderer, $$props) {
-  $$renderer.component(($$renderer2) => {
-    let {
-      children,
-      class: className,
-      color,
-      striped,
-      hoverable,
-      border,
-      $$slots,
-      $$events,
-      ...restProps
-    } = $$props;
-    const theme = getTheme("tableBodyRow");
-    const tableCtx = getContext("tableCtx");
-    let compoColor = color || tableCtx.color || "default";
-    let compoHoverable = hoverable || tableCtx.hoverable || false;
-    let compoStriped = striped || tableCtx.striped || false;
-    let compoBorder = border || tableCtx.border || false;
-    const base = tableBodyRow({
-      color: compoColor,
-      hoverable: compoHoverable,
-      striped: compoStriped,
-      border: compoBorder,
-      class: clsx$1(theme, className)
-    });
-    $$renderer2.push(`<tr${attributes({ ...restProps, class: clsx(base) })}>`);
-    if (children) {
-      $$renderer2.push("<!--[-->");
-      children($$renderer2);
-      $$renderer2.push(`<!---->`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]--></tr>`);
-  });
-}
-function TableBodyCell($$renderer, $$props) {
-  $$renderer.component(($$renderer2) => {
-    let {
-      children,
-      class: className,
-      colspan,
-      onclick,
-      $$slots,
-      $$events,
-      ...restProps
-    } = $$props;
-    const theme = getTheme("tableBodyCell");
-    $$renderer2.push(`<td${attributes({
-      ...restProps,
-      class: clsx(tableBodyCell({ class: clsx$1(theme, className) })),
-      colspan: colspan ?? 1
-    })}>`);
-    if (onclick) {
-      $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<button>`);
-      if (children) {
-        $$renderer2.push("<!--[-->");
-        children($$renderer2);
-        $$renderer2.push(`<!---->`);
-      } else {
-        $$renderer2.push("<!--[!-->");
-      }
-      $$renderer2.push(`<!--]--></button>`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-      if (children) {
-        $$renderer2.push("<!--[-->");
-        children($$renderer2);
-        $$renderer2.push(`<!---->`);
-      } else {
-        $$renderer2.push("<!--[!-->");
-      }
-      $$renderer2.push(`<!--]-->`);
-    }
-    $$renderer2.push(`<!--]--></td>`);
-  });
-}
-function TableBody($$renderer, $$props) {
-  $$renderer.component(($$renderer2) => {
-    let {
-      children,
-      bodyItems,
-      class: className,
-      $$slots,
-      $$events,
-      ...restProps
-    } = $$props;
-    function getCellValues(row) {
-      if (Array.isArray(row)) {
-        return row;
-      } else {
-        return Object.values(row);
-      }
-    }
-    $$renderer2.push(`<tbody${attributes({ ...restProps, class: clsx(clsx$1(className)) })}>`);
-    if (bodyItems) {
-      $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<!--[-->`);
-      const each_array = ensure_array_like(bodyItems);
-      for (let i = 0, $$length = each_array.length; i < $$length; i++) {
-        let row = each_array[i];
-        TableBodyRow($$renderer2, {
-          children: ($$renderer3) => {
-            $$renderer3.push(`<!--[-->`);
-            const each_array_1 = ensure_array_like(getCellValues(row));
-            for (let j = 0, $$length2 = each_array_1.length; j < $$length2; j++) {
-              let cellValue = each_array_1[j];
-              TableBodyCell($$renderer3, {
-                children: ($$renderer4) => {
-                  $$renderer4.push(`<!---->${escape_html(cellValue ?? "")}`);
-                },
-                $$slots: { default: true }
-              });
-            }
-            $$renderer3.push(`<!--]-->`);
-          },
-          $$slots: { default: true }
-        });
-      }
-      $$renderer2.push(`<!--]-->`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-      if (children) {
-        $$renderer2.push("<!--[-->");
-        children($$renderer2);
-        $$renderer2.push(`<!---->`);
-      } else {
-        $$renderer2.push("<!--[!-->");
-      }
-      $$renderer2.push(`<!--]-->`);
-    }
-    $$renderer2.push(`<!--]--></tbody>`);
-  });
-}
-function Table($$renderer, $$props) {
-  $$renderer.component(($$renderer2) => {
-    let {
-      children,
-      footerSlot,
-      captionSlot,
-      items,
-      divClass,
-      striped,
-      hoverable,
-      border = true,
-      shadow,
-      color = "default",
-      class: className,
-      classes,
-      $$slots,
-      $$events,
-      ...restProps
-    } = $$props;
-    const styling = classes ?? { div: divClass };
-    const theme = getTheme("table");
-    const { div, table: table$1 } = table({ color, shadow });
-    let tableCtx = {
-      get striped() {
-        return striped;
-      },
-      get hoverable() {
-        return hoverable;
-      },
-      get border() {
-        return border;
-      },
-      get color() {
-        return color;
-      }
-    };
-    setContext("tableCtx", tableCtx);
-    let headItems = items && items.length > 0 ? Object.keys(items[0]).map((key) => ({ text: key.charAt(0).toUpperCase() + key.slice(1) })) : [];
-    let bodyItems = items && items.length > 0 ? items.map((item) => Object.values(item)) : [];
-    $$renderer2.push(`<div${attr_class(clsx(div({ class: clsx$1(theme?.div, styling.div) })))}><table${attributes({
-      ...restProps,
-      class: clsx(table$1({ class: clsx$1(theme?.table, className) }))
-    })}>`);
-    if (captionSlot) {
-      $$renderer2.push("<!--[-->");
-      captionSlot($$renderer2);
-      $$renderer2.push(`<!---->`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]-->`);
-    if (items && items.length > 0) {
-      $$renderer2.push("<!--[-->");
-      TableHead($$renderer2, { headItems });
-      $$renderer2.push(`<!----> `);
-      TableBody($$renderer2, { bodyItems });
-      $$renderer2.push(`<!---->`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-      if (children) {
-        $$renderer2.push("<!--[-->");
-        children($$renderer2);
-        $$renderer2.push(`<!---->`);
-      } else {
-        $$renderer2.push("<!--[!-->");
-      }
-      $$renderer2.push(`<!--]-->`);
-    }
-    $$renderer2.push(`<!--]-->`);
-    if (footerSlot) {
-      $$renderer2.push("<!--[-->");
-      footerSlot($$renderer2);
-      $$renderer2.push(`<!---->`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]--></table></div>`);
-  });
-}
 tv({
   slots: {
     base: "flex space-x-2 rtl:space-x-reverse",
@@ -7821,6 +7512,255 @@ function BrowserOpenURL(url) {
 function Quit() {
   window.runtime.Quit();
 }
+function IsCalculating() {
+  return window["go"]["main"]["App"]["IsCalculating"]();
+}
+function LoadState() {
+  return window["go"]["main"]["App"]["LoadState"]();
+}
+function PerformCalculation(arg1) {
+  return window["go"]["main"]["App"]["PerformCalculation"](arg1);
+}
+function SaveState(arg1) {
+  return window["go"]["main"]["App"]["SaveState"](arg1);
+}
+function StopCalculation() {
+  return window["go"]["main"]["App"]["StopCalculation"]();
+}
+var main;
+((main2) => {
+  class TabularData {
+    formula;
+    molar;
+    masses;
+    static createFrom(source = {}) {
+      return new TabularData(source);
+    }
+    constructor(source = {}) {
+      if ("string" === typeof source) source = JSON.parse(source);
+      this.formula = source["formula"];
+      this.molar = source["molar"];
+      this.masses = source["masses"];
+    }
+  }
+  main2.TabularData = TabularData;
+  class AppState {
+    equation;
+    mode;
+    algorithm;
+    runMode;
+    targetNum;
+    targetMass;
+    intify;
+    outputPrecision;
+    floatTolerance;
+    maxComb;
+    results;
+    spoilerOpen;
+    status;
+    statusMessage;
+    tabular;
+    static createFrom(source = {}) {
+      return new AppState(source);
+    }
+    constructor(source = {}) {
+      if ("string" === typeof source) source = JSON.parse(source);
+      this.equation = source["equation"];
+      this.mode = source["mode"];
+      this.algorithm = source["algorithm"];
+      this.runMode = source["runMode"];
+      this.targetNum = source["targetNum"];
+      this.targetMass = source["targetMass"];
+      this.intify = source["intify"];
+      this.outputPrecision = source["outputPrecision"];
+      this.floatTolerance = source["floatTolerance"];
+      this.maxComb = source["maxComb"];
+      this.results = source["results"];
+      this.spoilerOpen = source["spoilerOpen"];
+      this.status = source["status"];
+      this.statusMessage = source["statusMessage"];
+      this.tabular = this.convertValues(source["tabular"], TabularData);
+    }
+    convertValues(a, classs, asMap = false) {
+      if (!a) {
+        return a;
+      }
+      if (a.slice && a.map) {
+        return a.map((elem) => this.convertValues(elem, classs));
+      } else if ("object" === typeof a) {
+        if (asMap) {
+          for (const key of Object.keys(a)) {
+            a[key] = new classs(a[key]);
+          }
+          return a;
+        }
+        return new classs(a);
+      }
+      return a;
+    }
+  }
+  main2.AppState = AppState;
+  class CalculationParams {
+    equation;
+    mode;
+    algorithm;
+    runMode;
+    targetNum;
+    targetMass;
+    intify;
+    outputPrecision;
+    floatTolerance;
+    maxComb;
+    static createFrom(source = {}) {
+      return new CalculationParams(source);
+    }
+    constructor(source = {}) {
+      if ("string" === typeof source) source = JSON.parse(source);
+      this.equation = source["equation"];
+      this.mode = source["mode"];
+      this.algorithm = source["algorithm"];
+      this.runMode = source["runMode"];
+      this.targetNum = source["targetNum"];
+      this.targetMass = source["targetMass"];
+      this.intify = source["intify"];
+      this.outputPrecision = source["outputPrecision"];
+      this.floatTolerance = source["floatTolerance"];
+      this.maxComb = source["maxComb"];
+    }
+  }
+  main2.CalculationParams = CalculationParams;
+  class CalculationResult {
+    success;
+    message;
+    details;
+    cancelled;
+    tabular;
+    static createFrom(source = {}) {
+      return new CalculationResult(source);
+    }
+    constructor(source = {}) {
+      if ("string" === typeof source) source = JSON.parse(source);
+      this.success = source["success"];
+      this.message = source["message"];
+      this.details = source["details"];
+      this.cancelled = source["cancelled"];
+      this.tabular = this.convertValues(source["tabular"], TabularData);
+    }
+    convertValues(a, classs, asMap = false) {
+      if (!a) {
+        return a;
+      }
+      if (a.slice && a.map) {
+        return a.map((elem) => this.convertValues(elem, classs));
+      } else if ("object" === typeof a) {
+        if (asMap) {
+          for (const key of Object.keys(a)) {
+            a[key] = new classs(a[key]);
+          }
+          return a;
+        }
+        return new classs(a);
+      }
+      return a;
+    }
+  }
+  main2.CalculationResult = CalculationResult;
+})(main || (main = {}));
+const globalState = writable({
+  textInput: "",
+  controlInput: {
+    mode: "masses",
+    algorithm: "auto",
+    runMode: "balance",
+    targetNumber: 0,
+    targetMass: 1,
+    intify: true,
+    outputPrecision: 4,
+    floatTolerance: 8,
+    maxCombinations: 15
+  },
+  parsedResult: null,
+  calculationError: null,
+  isCalculating: false
+});
+function updateGlobalState(updates) {
+  globalState.update((current) => ({ ...current, ...updates }));
+}
+function mapFrontendToAppState(frontendState) {
+  const stateData = {
+    equation: frontendState.textInput || "",
+    mode: frontendState.controlInput?.mode || "masses",
+    algorithm: frontendState.controlInput?.algorithm || "auto",
+    runMode: frontendState.controlInput?.runMode || "balance",
+    targetNum: frontendState.controlInput?.targetNumber || 0,
+    targetMass: frontendState.controlInput?.targetMass || 1,
+    intify: frontendState.controlInput?.intify ?? true,
+    outputPrecision: frontendState.controlInput?.outputPrecision || 4,
+    floatTolerance: frontendState.controlInput?.floatTolerance || 8,
+    maxComb: frontendState.controlInput?.maxCombinations || 15,
+    results: frontendState.parsedResult ? JSON.stringify(frontendState.parsedResult) : "Ready",
+    spoilerOpen: false,
+    status: frontendState.isCalculating ? "w-3 h-3 bg-blue-500 rounded-full" : "w-3 h-3 bg-gray-500 rounded-full",
+    statusMessage: frontendState.isCalculating ? "Calculating..." : frontendState.calculationError ? `Error: ${frontendState.calculationError}` : "Ready",
+    tabular: frontendState.parsedResult?.tabular || []
+  };
+  return main.AppState.createFrom(stateData);
+}
+function mapAppStateToFrontend(appState) {
+  return {
+    textInput: appState.equation,
+    controlInput: {
+      mode: appState.mode || "masses",
+      algorithm: appState.algorithm || "auto",
+      runMode: appState.runMode || "balance",
+      targetNumber: appState.targetNum || 0,
+      targetMass: appState.targetMass || 1,
+      intify: appState.intify ?? true,
+      outputPrecision: appState.outputPrecision || 4,
+      floatTolerance: appState.floatTolerance || 8,
+      maxCombinations: appState.maxComb || 15
+    },
+    parsedResult: appState.results && appState.results !== "Ready" ? JSON.parse(appState.results) : null,
+    calculationError: appState.statusMessage?.startsWith("Error:") ? appState.statusMessage.substring(6) : null,
+    isCalculating: appState.status?.includes("blue")
+  };
+}
+async function saveState(frontendState) {
+  try {
+    const appState = mapFrontendToAppState(frontendState);
+    await SaveState(appState);
+    console.log("State saved successfully");
+  } catch (error) {
+    console.error("Failed to save state:", error);
+    throw new Error(`Failed to save state: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+async function loadState() {
+  try {
+    const appState = await LoadState();
+    if (!appState) {
+      return {};
+    }
+    const frontendState = mapAppStateToFrontend(appState);
+    console.log("State loaded successfully");
+    return frontendState;
+  } catch (error) {
+    console.error("Failed to load state:", error);
+    throw new Error(`Failed to load state: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+async function saveCurrentState() {
+  const currentState = await new Promise((resolve) => {
+    globalState.subscribe((state) => resolve(state))();
+  });
+  return saveState(currentState);
+}
+async function loadAndApplyState() {
+  const loadedState = await loadState();
+  if (Object.keys(loadedState).length > 0) {
+    updateGlobalState(loadedState);
+  }
+}
 function TopNavBar($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     const wikiLink = "https://github.com/Syrov-Egor/chemsynthcalc-GUI/wiki";
@@ -7853,6 +7793,9 @@ function TopNavBar($$renderer, $$props) {
             Dropdown($$renderer4, {
               children: ($$renderer5) => {
                 DropdownItem($$renderer5, {
+                  onclick: () => {
+                    saveCurrentState();
+                  },
                   children: ($$renderer6) => {
                     P($$renderer6, {
                       children: ($$renderer7) => {
@@ -7865,6 +7808,9 @@ function TopNavBar($$renderer, $$props) {
                 });
                 $$renderer5.push(`<!----> `);
                 DropdownItem($$renderer5, {
+                  onclick: () => {
+                    loadAndApplyState();
+                  },
                   children: ($$renderer6) => {
                     P($$renderer6, {
                       children: ($$renderer7) => {
@@ -8553,15 +8499,6 @@ function EquationInput($$renderer, $$props) {
     bind_props($$props, { textInput });
   });
 }
-function IsCalculating() {
-  return window["go"]["main"]["App"]["IsCalculating"]();
-}
-function PerformCalculation(arg1) {
-  return window["go"]["main"]["App"]["PerformCalculation"](arg1);
-}
-function StopCalculation() {
-  return window["go"]["main"]["App"]["StopCalculation"]();
-}
 class WailsCalculationService {
   isLoading = false;
   currentCalculation = null;
@@ -8646,6 +8583,11 @@ class CalculationManager {
     this.isCalculating = true;
     this.parsedResult = null;
     this.calculationError = null;
+    updateGlobalState({
+      isCalculating: true,
+      parsedResult: null,
+      calculationError: null
+    });
     try {
       const params = {
         equation: textInput,
@@ -8693,6 +8635,11 @@ class CalculationManager {
     } finally {
       this.isCalculating = false;
       this.shouldAbort = false;
+      updateGlobalState({
+        isCalculating: false,
+        parsedResult: this.parsedResult,
+        calculationError: this.calculationError
+      });
     }
   }
   abort() {
@@ -8705,6 +8652,11 @@ class CalculationManager {
     this.calculationError = null;
     this.shouldAbort = false;
     wailsService.terminate();
+    updateGlobalState({
+      isCalculating: false,
+      parsedResult: null,
+      calculationError: null
+    });
   }
 }
 const calculationManager = new CalculationManager();
@@ -8774,150 +8726,10 @@ function InputGroup($$renderer, $$props) {
     bind_props($$props, { textInput, controlInput });
   });
 }
-function prettyPrint(obj, prefix = "") {
-  if (obj == null) return "null";
-  if (typeof obj !== "object") return String(obj);
-  let str = "";
-  const indent = prefix + "  ";
-  if (Array.isArray(obj)) {
-    str += "[\n";
-    for (let i = 0; i < obj.length; i++) {
-      str += indent + prettyPrint(obj[i], indent) + (i < obj.length - 1 ? "," : "") + "\n";
-    }
-    str += prefix + "]";
-  } else {
-    str += "{\n";
-    for (const [key, value] of Object.entries(obj)) {
-      str += indent + `${key}: ${prettyPrint(value, indent)},
-`;
-    }
-    str += prefix + "}";
-  }
-  return str;
-}
-function ResultDetails($$renderer, $$props) {
-  $$renderer.component(($$renderer2) => {
-    let { parsedResult, mode = void 0 } = $$props;
-    let isOpen = mode === "formula" || mode === "balance";
-    if (parsedResult?.details) {
-      $$renderer2.push("<!--[-->");
-      P($$renderer2, {
-        size: "base",
-        weight: "semibold",
-        class: "pb-4",
-        children: ($$renderer3) => {
-          $$renderer3.push(`<details${attr("open", isOpen, true)} class="svelte-1rkuvqn"><summary class="svelte-1rkuvqn">Details</summary> <pre>${escape_html(prettyPrint(parsedResult.details))}</pre></details>`);
-        },
-        $$slots: { default: true }
-      });
-    } else {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]-->`);
-    bind_props($$props, { mode });
-  });
-}
-function ResultTable($$renderer, $$props) {
-  $$renderer.component(($$renderer2) => {
-    let { parsedResult } = $$props;
-    if (parsedResult?.tabular && parsedResult.tabular.length > 0) {
-      $$renderer2.push("<!--[-->");
-      Table($$renderer2, {
-        class: "relative overflow-x-auto bg-neutral-primary-soft shadow-xs rounded-base border border-round",
-        children: ($$renderer3) => {
-          TableHead($$renderer3, {
-            children: ($$renderer4) => {
-              TableHeadCell($$renderer4, {
-                children: ($$renderer5) => {
-                  P($$renderer5, {
-                    weight: "semibold",
-                    children: ($$renderer6) => {
-                      $$renderer6.push(`<!---->Formula`);
-                    },
-                    $$slots: { default: true }
-                  });
-                },
-                $$slots: { default: true }
-              });
-              $$renderer4.push(`<!----> `);
-              TableHeadCell($$renderer4, {
-                children: ($$renderer5) => {
-                  P($$renderer5, {
-                    weight: "semibold",
-                    children: ($$renderer6) => {
-                      $$renderer6.push(`<!---->Molar mass (g/mol)`);
-                    },
-                    $$slots: { default: true }
-                  });
-                },
-                $$slots: { default: true }
-              });
-              $$renderer4.push(`<!----> `);
-              TableHeadCell($$renderer4, {
-                children: ($$renderer5) => {
-                  P($$renderer5, {
-                    weight: "semibold",
-                    children: ($$renderer6) => {
-                      $$renderer6.push(`<!---->Mass (g)`);
-                    },
-                    $$slots: { default: true }
-                  });
-                },
-                $$slots: { default: true }
-              });
-              $$renderer4.push(`<!---->`);
-            },
-            $$slots: { default: true }
-          });
-          $$renderer3.push(`<!----> `);
-          TableBody($$renderer3, {
-            children: ($$renderer4) => {
-              $$renderer4.push(`<!--[-->`);
-              const each_array = ensure_array_like(parsedResult.tabular);
-              for (let i = 0, $$length = each_array.length; i < $$length; i++) {
-                let row = each_array[i];
-                TableBodyRow($$renderer4, {
-                  children: ($$renderer5) => {
-                    $$renderer5.push(`<!--[-->`);
-                    const each_array_1 = ensure_array_like(Object.values(row));
-                    for (let j = 0, $$length2 = each_array_1.length; j < $$length2; j++) {
-                      let value = each_array_1[j];
-                      TableBodyCell($$renderer5, {
-                        children: ($$renderer6) => {
-                          P($$renderer6, {
-                            weight: "semibold",
-                            children: ($$renderer7) => {
-                              $$renderer7.push(`<!---->${escape_html(value)}`);
-                            },
-                            $$slots: { default: true }
-                          });
-                        },
-                        $$slots: { default: true }
-                      });
-                    }
-                    $$renderer5.push(`<!--]-->`);
-                  },
-                  $$slots: { default: true }
-                });
-              }
-              $$renderer4.push(`<!--]-->`);
-            },
-            $$slots: { default: true }
-          });
-          $$renderer3.push(`<!---->`);
-        },
-        $$slots: { default: true }
-      });
-    } else {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]-->`);
-  });
-}
 function Results($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let { controlInput } = $$props;
-    let mode = controlInput.mode;
+    controlInput.mode;
     $$renderer2.push(`<div id="results-section" class="py-2"><div id="regular-results-header">`);
     Heading($$renderer2, {
       tag: "h5",
@@ -8927,33 +8739,11 @@ function Results($$renderer, $$props) {
       $$slots: { default: true }
     });
     $$renderer2.push(`<!----> <div>`);
-    if (calculationManager.isCalculating) {
-      $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<span id="status-text" class="calculating">`);
-      Spinner($$renderer2, { type: "dots", color: "emerald" });
-      $$renderer2.push(`<!----></span>`);
-    } else {
+    {
       $$renderer2.push("<!--[!-->");
-      if (calculationManager.calculationError) {
-        $$renderer2.push("<!--[-->");
-        P($$renderer2, {
-          class: "text-red-700 dark:text-red-500 py-2",
-          size: "lg",
-          children: ($$renderer3) => {
-            $$renderer3.push(`<span id="status-text" class="error">Error: ${escape_html(calculationManager.calculationError)}</span>`);
-          },
-          $$slots: { default: true }
-        });
-      } else {
+      {
         $$renderer2.push("<!--[!-->");
-        if (calculationManager.parsedResult) {
-          $$renderer2.push("<!--[-->");
-          $$renderer2.push(`<div id="status-text">`);
-          ResultDetails($$renderer2, { parsedResult: calculationManager.parsedResult, mode });
-          $$renderer2.push(`<!----> `);
-          ResultTable($$renderer2, { parsedResult: calculationManager.parsedResult });
-          $$renderer2.push(`<!----></div>`);
-        } else {
+        {
           $$renderer2.push("<!--[!-->");
           P($$renderer2, {
             class: "py-2",
@@ -8970,51 +8760,53 @@ function Results($$renderer, $$props) {
     $$renderer2.push(`<!--]--></div></div></div>`);
   });
 }
-function App($$renderer) {
-  let textInput = "";
-  let controlInput = {
-    mode: "masses",
-    algorithm: "auto",
-    runMode: "balance",
-    targetNumber: 0,
-    targetMass: 1,
-    intify: true,
-    outputPrecision: 4,
-    floatTolerance: 8,
-    maxCombinations: 15
-  };
-  let $$settled = true;
-  let $$inner_renderer;
-  function $$render_inner($$renderer2) {
-    $$renderer2.push(`<div class="p-4 dark:bg-gray-900">`);
-    TopNavBar($$renderer2);
-    $$renderer2.push(`<!----> `);
-    InputGroup($$renderer2, {
-      get textInput() {
-        return textInput;
-      },
-      set textInput($$value) {
-        textInput = $$value;
-        $$settled = false;
-      },
-      get controlInput() {
-        return controlInput;
-      },
-      set controlInput($$value) {
-        controlInput = $$value;
-        $$settled = false;
-      }
-    });
-    $$renderer2.push(`<!----> `);
-    Results($$renderer2, { controlInput });
-    $$renderer2.push(`<!----></div>`);
-  }
-  do {
-    $$settled = true;
-    $$inner_renderer = $$renderer.copy();
-    $$render_inner($$inner_renderer);
-  } while (!$$settled);
-  $$renderer.subsume($$inner_renderer);
+function App($$renderer, $$props) {
+  $$renderer.component(($$renderer2) => {
+    let textInput = "";
+    let controlInput = {
+      mode: "masses",
+      algorithm: "auto",
+      runMode: "balance",
+      targetNumber: 0,
+      targetMass: 1,
+      intify: true,
+      outputPrecision: 4,
+      floatTolerance: 8,
+      maxCombinations: 15
+    };
+    let $$settled = true;
+    let $$inner_renderer;
+    function $$render_inner($$renderer3) {
+      $$renderer3.push(`<div class="p-4 dark:bg-gray-900">`);
+      TopNavBar($$renderer3);
+      $$renderer3.push(`<!----> `);
+      InputGroup($$renderer3, {
+        get textInput() {
+          return textInput;
+        },
+        set textInput($$value) {
+          textInput = $$value;
+          $$settled = false;
+        },
+        get controlInput() {
+          return controlInput;
+        },
+        set controlInput($$value) {
+          controlInput = $$value;
+          $$settled = false;
+        }
+      });
+      $$renderer3.push(`<!----> `);
+      Results($$renderer3, { controlInput });
+      $$renderer3.push(`<!----></div>`);
+    }
+    do {
+      $$settled = true;
+      $$inner_renderer = $$renderer2.copy();
+      $$render_inner($$inner_renderer);
+    } while (!$$settled);
+    $$renderer2.subsume($$inner_renderer);
+  });
 }
 function _page($$renderer) {
   App($$renderer);
