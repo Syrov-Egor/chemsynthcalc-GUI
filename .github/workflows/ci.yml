@@ -1,0 +1,41 @@
+name: Wails build
+
+on:
+  push:
+    tags:
+      - '*'
+
+env:
+  NODE_OPTIONS: "--max-old-space-size=4096"
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        build:
+          - name: 'chemsynthcalc-lin'
+            platform:  'linux/amd64'
+            os: 'ubuntu-latest'
+          - name: 'chemsynthcalc.exe'
+            platform:  'windows/amd64'
+            os: 'windows-latest'
+          - name: 'chemsynthcalc'
+            platform:  'darwin/universal'
+            os: 'macos-latest'
+
+    runs-on: ${{ matrix.build.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Build wails
+        uses: snider/build/actions/build/wails2@v3
+        id: build
+        with:
+          build-name: ${{ matrix.build.name }}
+          build-platform: ${{ matrix.build.platform }}
+          package: true
+          go-version: '1.25'
