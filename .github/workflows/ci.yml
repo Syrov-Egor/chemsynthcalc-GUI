@@ -32,7 +32,7 @@ jobs:
           submodules: recursive
 
       - name: Build wails
-        uses: snider/build/actions/build/wails2@v3
+        uses: Snider/build@v2.2
         id: build
         with:
           build-name: ${{ matrix.build.name }}
