@@ -7512,6 +7512,9 @@ function BrowserOpenURL(url) {
 function Quit() {
   window.runtime.Quit();
 }
+function Export(arg1, arg2) {
+  return window["go"]["main"]["App"]["Export"](arg1, arg2);
+}
 function IsCalculating() {
   return window["go"]["main"]["App"]["IsCalculating"]();
 }
@@ -7761,6 +7764,13 @@ async function loadAndApplyState() {
     updateGlobalState(loadedState);
   }
 }
+async function exportFile(extension) {
+  const currentState = await new Promise((resolve) => {
+    globalState.subscribe((state) => resolve(state))();
+  });
+  const appState = mapFrontendToAppState(currentState);
+  await Export(appState, extension);
+}
 function TopNavBar($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     const wikiLink = "https://github.com/Syrov-Egor/chemsynthcalc-GUI/wiki";
@@ -7838,6 +7848,9 @@ function TopNavBar($$renderer, $$props) {
                       placement: "right",
                       children: ($$renderer7) => {
                         DropdownItem($$renderer7, {
+                          onclick: () => {
+                            exportFile("txt");
+                          },
                           children: ($$renderer8) => {
                             P($$renderer8, {
                               children: ($$renderer9) => {
@@ -7850,6 +7863,9 @@ function TopNavBar($$renderer, $$props) {
                         });
                         $$renderer7.push(`<!----> `);
                         DropdownItem($$renderer7, {
+                          onclick: () => {
+                            exportFile("csv");
+                          },
                           children: ($$renderer8) => {
                             P($$renderer8, {
                               children: ($$renderer9) => {
@@ -7862,6 +7878,9 @@ function TopNavBar($$renderer, $$props) {
                         });
                         $$renderer7.push(`<!----> `);
                         DropdownItem($$renderer7, {
+                          onclick: () => {
+                            exportFile("xlsx");
+                          },
                           children: ($$renderer8) => {
                             P($$renderer8, {
                               children: ($$renderer9) => {

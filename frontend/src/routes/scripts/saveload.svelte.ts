@@ -1,4 +1,4 @@
-import { SaveState, LoadState } from '../../../wailsjs/go/main/App';
+import { SaveState, LoadState, Export } from '../../../wailsjs/go/main/App';
 import * as models from '../../../wailsjs/go/models';
 import { globalState, updateGlobalState } from './globalState';
 
@@ -103,4 +103,12 @@ export async function loadAndApplyState(): Promise<void> {
     if (Object.keys(loadedState).length > 0) {
         updateGlobalState(loadedState);
     }
+}
+
+export async function exportFile(extension: string): Promise<void> {
+    const currentState = await new Promise<FrontendState>((resolve) => {
+        globalState.subscribe((state) => resolve(state as FrontendState))();
+    });
+    const appState = mapFrontendToAppState(currentState);
+    await Export(appState, extension);
 }

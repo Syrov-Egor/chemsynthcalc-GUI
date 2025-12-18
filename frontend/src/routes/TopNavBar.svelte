@@ -22,6 +22,7 @@
     import {
         saveCurrentState,
         loadAndApplyState,
+        exportFile,
     } from "./scripts/saveload.svelte";
 
     const wikiLink = "https://github.com/Syrov-Egor/chemsynthcalc-GUI/wiki";
@@ -52,9 +53,21 @@
                     <P>Export to...</P><ChevronRightOutline />
                 </div>
                 <Dropdown placement="right"
-                    ><DropdownItem><P>.txt</P></DropdownItem>
-                    <DropdownItem><P>.csv</P></DropdownItem>
-                    <DropdownItem><P>.xlsx</P></DropdownItem></Dropdown
+                    ><DropdownItem
+                        onclick={() => {
+                            exportFile("txt");
+                        }}><P>.txt</P></DropdownItem
+                    >
+                    <DropdownItem
+                        onclick={() => {
+                            exportFile("csv");
+                        }}><P>.csv</P></DropdownItem
+                    >
+                    <DropdownItem
+                        onclick={() => {
+                            exportFile("xlsx");
+                        }}><P>.xlsx</P></DropdownItem
+                    ></Dropdown
                 ></DropdownItem
             >
             <DropdownItem
