@@ -73,12 +73,19 @@ export async function saveState(frontendState: FrontendState): Promise<void> {
     }
 }
 
-export async function loadState(): Promise<Partial<FrontendState>> {
+export async function loadState(): Promise<Partial<FrontendState> | null> {
     try {
         const appState = await LoadState();
-        if (!appState) {
+
+        // Check if this is a cancellation by looking for empty/default values
+        // When user cancels, backend returns AppState{} with empty fields
+        const isCancelled = !appState ||
+            (!appState.equation && !appState.mode) ||
+            (appState.equation === "" && !appState.targetNum);
+
+        if (isCancelled) {
             // User cancelled the file dialog
-            return {};
+            return null; // Use null to clearly indicate cancellation
         }
 
         const frontendState = mapAppStateToFrontend(appState);
@@ -119,9 +126,13 @@ export async function saveCurrentState(): Promise<void> {
 
 export async function loadAndApplyState(): Promise<void> {
     const loadedState = await loadState();
-    if (Object.keys(loadedState).length > 0) {
+
+    // Only update state if we actually loaded something (not cancelled)
+    // When cancelled, loadState returns null
+    if (loadedState !== null && loadedState !== undefined) {
         updateGlobalState(loadedState);
     }
+    // If loading was cancelled, do nothing (preserve current state)
 }
 
 export async function exportFile(extension: string): Promise<void> {
