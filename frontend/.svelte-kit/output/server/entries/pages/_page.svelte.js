@@ -7744,8 +7744,9 @@ async function saveState(frontendState) {
 async function loadState() {
   try {
     const appState = await LoadState();
-    if (!appState) {
-      return {};
+    const isCancelled = !appState || !appState.equation && !appState.mode || appState.equation === "" && !appState.targetNum;
+    if (isCancelled) {
+      return null;
     }
     const frontendState = mapAppStateToFrontend(appState);
     console.log("State loaded successfully");
@@ -7771,7 +7772,7 @@ async function saveCurrentState() {
 }
 async function loadAndApplyState() {
   const loadedState = await loadState();
-  if (Object.keys(loadedState).length > 0) {
+  if (loadedState !== null && loadedState !== void 0) {
     updateGlobalState(loadedState);
   }
 }
@@ -7947,6 +7948,7 @@ function TopNavBar($$renderer, $$props) {
                 e.preventDefault();
                 BrowserOpenURL(wikiLink);
               },
+              style: "cursor: pointer;",
               children: ($$renderer5) => {
                 P($$renderer5, {
                   children: ($$renderer6) => {
@@ -7963,6 +7965,7 @@ function TopNavBar($$renderer, $$props) {
                 e.preventDefault();
                 BrowserOpenURL(githubLink);
               },
+              style: "cursor: pointer;",
               children: ($$renderer5) => {
                 GithubSolid($$renderer5, { class: "shrink-0 h-7 w-7" });
               },

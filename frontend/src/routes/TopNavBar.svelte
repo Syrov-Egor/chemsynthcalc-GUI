@@ -80,13 +80,16 @@
             onclick={(e: Event) => {
                 e.preventDefault();
                 BrowserOpenURL(wikiLink);
-            }}><P>How to use</P></NavLi
+            }}
+            style="cursor: pointer;"><P>How to use</P></NavLi
         >
         <NavLi
             onclick={(e: Event) => {
                 e.preventDefault();
                 BrowserOpenURL(githubLink);
-            }}><GithubSolid class="shrink-0 h-7 w-7" /></NavLi
+            }}
+            style="cursor: pointer;"
+            ><GithubSolid class="shrink-0 h-7 w-7" /></NavLi
         >
         <NavLi
             ><P class="text-emerald-700 dark:text-emerald-500"
