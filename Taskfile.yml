@@ -61,7 +61,7 @@ tasks:
       - task: wasm
       - task: frontend:web
 
-  dev:
+  desktop:dev:
     desc: "Desktop dev mode: Vite with hot reload + the Go app pointed at it"
     cmds:
       - task: frontend:desktop
@@ -70,3 +70,8 @@ tasks:
         VITE_PID=$!
         trap 'kill $VITE_PID' EXIT
         FRONTEND_DEVSERVER_URL=http://localhost:9245 go run .
+
+  dev:
+    desc: "See the app in browser"
+    cmds:
+     - cd frontend && npm run dev
