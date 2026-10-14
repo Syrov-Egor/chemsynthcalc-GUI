@@ -1,0 +1,81 @@
+name: Desktop release builds
+
+on:
+  push:
+    tags: ["v*"]
+  # Allows dry runs from the Actions tab.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            artifact: chemsynthcalc-linux-amd64
+            goenv: CGO_ENABLED=1
+            ldflags: "-w -s"
+          - os: windows-latest
+            artifact: chemsynthcalc-windows-amd64.exe
+            goenv: CGO_ENABLED=0
+            ldflags: "-w -s -H windowsgui"
+          - os: macos-latest
+            artifact: chemsynthcalc-darwin-arm64
+            goenv: CGO_ENABLED=1
+            ldflags: "-w -s"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install GTK/WebKit headers (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libgtk-4-dev libwebkitgtk-6.0-dev libx11-dev pkg-config
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Install frontend dependencies
+        run: npm --prefix frontend install
+
+      - name: Build frontend (desktop target)
+        run: npm --prefix frontend run build:desktop
+
+      - name: Build app
+        shell: bash
+        run: |
+          eval "${{ matrix.goenv }}"
+          go build -tags production -trimpath -ldflags="${{ matrix.ldflags }}" \
+            -o "build/${{ matrix.artifact }}" .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: build/${{ matrix.artifact }}
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*

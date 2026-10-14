@@ -3,14 +3,70 @@
 version: '3'
 silent: true
 
+vars:
+  BIN_DIR: bin
+  APP_NAME: chemsynthcalc
+
 tasks:
   default:
-    desc: Print a greeting message
+    desc: List the available tasks
     cmds:
-      - echo "Hello!"
-  
+      - wails3 task -list
+
+  install:
+    desc: Install frontend npm dependencies
+    cmds:
+      - npm --prefix frontend install
+
+  check:
+    desc: Type-check the frontend and vet/test the Go code
+    cmds:
+      - npm --prefix frontend run check
+      - go vet ./...
+      - go test ./...
+
+  bindings:
+    desc: Regenerate the Wails JS bindings in frontend/bindings (run after changing desktop/ or internal/bridge/ signatures)
+    cmds:
+      - wails3 generate bindings
+
+  wasm:
+    desc: Rebuild the browser WASM module (requires TinyGo on PATH, or set TINYGO=/path/to/tinygo)
+    cmds:
+      - |
+        TINYGO="${TINYGO:-tinygo}"
+        "$TINYGO" build -o frontend/src/lib/wasm/main.wasm -target wasm -no-debug ./cmd/wasm
+        # Keep the JS runtime shim in sync with the TinyGo version that built it.
+        cp "$("$TINYGO" env TINYGOROOT)/targets/wasm_exec.js" frontend/src/lib/wasm/wasm_exec_tiny.js
+
+  frontend:desktop:
+    desc: Build the frontend for the desktop (Wails) target
+    cmds:
+      - npm --prefix frontend run build:desktop
+
+  frontend:web:
+    desc: Build the frontend for the web (WASM) target
+    cmds:
+      - npm --prefix frontend run build:web
+
+  build:
+    desc: Build the desktop app into bin/ (frontend + Go, embedded assets)
+    cmds:
+      - task: frontend:desktop
+      - go build -tags production -trimpath -ldflags="-w -s" -o {{.BIN_DIR}}/{{.APP_NAME}} .
+
+  build:web:
+    desc: Build the web app into frontend/dist (WASM + frontend, base /chemsynthcalc-GUI/)
+    cmds:
+      - task: wasm
+      - task: frontend:web
+
   dev:
-    desc: Run a dev env in browser
+    desc: "Desktop dev mode: Vite with hot reload + the Go app pointed at it"
     cmds:
-      - cd export/frontend/ && npm run dev
-    
+      - task: frontend:desktop
+      - |
+        npm --prefix frontend run dev &
+        VITE_PID=$!
+        trap 'kill $VITE_PID' EXIT
+        FRONTEND_DEVSERVER_URL=http://localhost:9245 go run .

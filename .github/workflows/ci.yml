@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install GTK/WebKit headers for the Wails build
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libgtk-4-dev libwebkitgtk-6.0-dev libx11-dev pkg-config
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - uses: acifani/setup-tinygo@v2
+        with:
+          tinygo-version: 0.43.0
+
+      - name: Install frontend dependencies
+        run: npm --prefix frontend install
+
+      - name: Type-check frontend, vet and test Go
+        run: |
+          npm --prefix frontend run check
+          go vet ./...
+          go test ./...
+
+      - name: Build WASM entrypoint
+        run: |
+          tinygo build -o frontend/src/lib/wasm/main.wasm -target wasm -no-debug ./cmd/wasm
+          cp "$(tinygo env TINYGOROOT)/targets/wasm_exec.js" frontend/src/lib/wasm/wasm_exec_tiny.js
+
+      - name: Build web bundle
+        run: npm --prefix frontend run build:web
+
+      - name: Web bundle must not contain Wails bindings
+        run: |
+          if grep -rq "wailsio\|WailsService\|FileService" frontend/dist/assets/*.js; then
+            echo "Web bundle references Wails code" >&2
+            exit 1
+          fi
+
+      - name: Build desktop bundle
+        run: npm --prefix frontend run build:desktop
+
+      - name: Desktop bundle must not contain WASM
+        run: |
+          if find frontend/dist -name '*.wasm' | grep -q .; then
+            echo "Desktop bundle contains a .wasm file" >&2
+            exit 1
+          fi
+          if grep -rq "runCalculation" frontend/dist/assets/*.js; then
+            echo "Desktop bundle references the WASM worker" >&2
+            exit 1
+          fi
+
+      - name: Build desktop app (embeds frontend/dist)
+        run: go build -tags production -trimpath -ldflags="-w -s" -o bin/chemsynthcalc .
