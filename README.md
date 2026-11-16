@@ -1,22 +1,59 @@
-# Chemical synthesis calculator GUI
-A desktop GUI app for calculating the masses of substances required for chemical synthesis directly from the reaction string. It includes solutions for all intermediate steps, including chemical formula parsing, molar mass calculation and reaction balancing with different matrix methods. This can be considered as a GUI for the original [chemsynthcalc](https://github.com/Syrov-Egor/chemsynthcalc/) package with Go backend [gosynthcalc](https://github.com/Syrov-Egor/gosynthcalc) compiled to executables with [Wails](https://wails.io/). The web version with WASM backend is [also avaliable](https://syrov-egor.github.io/chemsynthcalc-web/). Unlike a web application, a desktop application can save/load calculation files and export results to txt, csv, and xlsx files.
-![A UI of chemsynthcalc-GUI app](/build/UI.jpg)
+# Welcome to Your New Wails3 Project!
 
-## Download the binary
-The app in available for Windows 10/11, Linux, MacOS and Andoird. See [releases](https://github.com/Syrov-Egor/chemsynthcalc-GUI/releases).
+Congratulations on generating your Wails3 application! This README will guide you through the next steps to get your project up and running.
 
-**Warning** The code for all compiled applications is unsigned, so they will not work out of the box without warning on any system. See the [releases](https://github.com/Syrov-Egor/chemsynthcalc-GUI/releases) page for detailed instructions.
+## Getting Started
 
-## How to use
-See [GitHub Wiki](https://github.com/Syrov-Egor/chemsynthcalc-GUI/wiki) for instructions.
+1. Navigate to your project directory in the terminal.
 
-## Build it yourself
-This app is using [Wails](https://wails.io/). To build:
-1. [Install Wails](https://wails.io/docs/gettingstarted/installation). 
-2. Run `wails doctor` to check if all dependencies are installed.
-3. `git clone` this repo and `cd` into the directory.
-4. Run `wails build` with specific flags (see [reference](https://wails.io/docs/reference/cli)).
-5. Your executable will be in /build/bin dir.
+2. To run your application in development mode, use the following command:
 
-## License
-The code is provided under the MIT license.
+   ```
+   wails3 dev
+   ```
+
+   This will start your application and enable hot-reloading for both frontend and backend changes.
+
+3. To build your application for production, use:
+
+   ```
+   wails3 build
+   ```
+
+   This will create a production-ready executable in the `build` directory.
+
+## Exploring Wails3 Features
+
+Now that you have your project set up, it's time to explore the features that Wails3 offers:
+
+1. **Check out the examples**: The best way to learn is by example. Visit the `examples` directory in the `v3/examples` directory to see various sample applications.
+
+2. **Run an example**: To run any of the examples, navigate to the example's directory and use:
+
+   ```
+   go run .
+   ```
+
+   Note: Some examples may be under development during the alpha phase.
+
+3. **Explore the documentation**: Visit the [Wails3 documentation](https://v3.wails.io/) for in-depth guides and API references.
+
+4. **Join the community**: Have questions or want to share your progress? Join the [Wails Discord](https://discord.gg/JDdSxwjhGf) or visit the [Wails discussions on GitHub](https://github.com/wailsapp/wails/discussions).
+
+## Project Structure
+
+Take a moment to familiarize yourself with your project structure:
+
+- `frontend/`: Contains your frontend code (HTML, CSS, JavaScript/TypeScript)
+- `main.go`: The entry point of your Go backend
+- `app.go`: Define your application structure and methods here
+- `wails.json`: Configuration file for your Wails project
+
+## Next Steps
+
+1. Modify the frontend in the `frontend/` directory to create your desired UI.
+2. Add backend functionality in `main.go`.
+3. Use `wails3 dev` to see your changes in real-time.
+4. When ready, build your application with `wails3 build`.
+
+Happy coding with Wails3! If you encounter any issues or have questions, don't hesitate to consult the documentation or reach out to the Wails community.
