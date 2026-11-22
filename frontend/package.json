@@ -8,10 +8,9 @@
   },
   "scripts": {
     "dev": "vite",
-    "build:wasm": "task wasm-release",
-    "build": "npm run build:wasm && vite build",
-    "build:pages": "npm run build:wasm && vite build --base=/chemsynthcalc-web/",
-    "build:web": "vite build",
+    "build:dev": "vite build --minify false --mode development",
+    "build": "vite build",
+    "build:pages": "vite build --base=/chemsynthcalc-web/",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json",
     "deploy": "npm run build:pages && gh-pages -d dist --nojekyll"
@@ -37,6 +36,7 @@
     "vite": "^8.3.7"
   },
   "dependencies": {
+    "@wailsio/runtime": "^3.1.0",
     "mode-watcher": "^1.1.0"
   }
 }

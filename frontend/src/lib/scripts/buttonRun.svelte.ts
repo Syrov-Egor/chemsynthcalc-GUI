@@ -1,4 +1,4 @@
-import { wasmManager } from "./wasm.svelte";
+import { App } from "../../../bindings/chemsynthcalc";
 import { validateCalculationParams } from "./validation";
 import type { CalculationResult, ControlInput } from "$lib/types";
 
@@ -10,6 +10,7 @@ class CalculationManager {
     // Invalidates continuations of superseded or reset runs so a late result
     // or error cannot overwrite the state of a newer run.
     private runId = 0
+    private currentCall: ReturnType<typeof App.PerformCalculation> | null = null
 
     async run(controlInput: ControlInput, textInput: string) {
         // If already calculating, abort current calculation
@@ -32,7 +33,7 @@ class CalculationManager {
             equation: textInput
         }
 
-        // Reject invalid controls before they reach the worker so a bad value
+        // Reject invalid controls before they reach the backend so a bad value
         // cannot crash rendering or request an unreasonable search.
         const validation = validateCalculationParams(params)
 
@@ -42,9 +43,12 @@ class CalculationManager {
             return
         }
 
+        const call = App.PerformCalculation(validation.params)
+        this.currentCall = call
+
         try {
-            // Run calculation in Web Worker
-            const result = await wasmManager.calculate(validation.params)
+            // Run calculation in the native Go backend.
+            const result = await call
 
             // Check if this run is still the current one
             if (runId !== this.runId || this.shouldAbort) {
@@ -55,7 +59,10 @@ class CalculationManager {
             if (result.cancelled) {
                 this.parsedResult = null
             } else if (result.success) {
-                this.parsedResult = result
+                this.parsedResult = {
+                    ...result,
+                    tabular: result.tabular ?? []
+                }
             } else {
                 console.error('✗ Calculation failed:', result.message)
                 if (result.details) {
@@ -70,6 +77,10 @@ class CalculationManager {
                 console.error('Calculation error:', this.calculationError)
             }
         } finally {
+            if (this.currentCall === call) {
+                this.currentCall = null
+            }
+
             if (runId === this.runId) {
                 this.isCalculating = false
                 this.shouldAbort = false
@@ -78,19 +89,21 @@ class CalculationManager {
     }
 
     private abort() {
-        wasmManager.abort()
+        const call = this.currentCall
+        this.currentCall = null
+        call?.cancel('Calculation aborted by user')
     }
 
     // Reset the manager state
     reset() {
-        // Invalidate any in-flight run before terminating its worker so its
-        // pending promise cannot settle the manager afterwards.
+        // Invalidate any in-flight run before cancelling it so its pending
+        // promise cannot settle the manager afterwards.
         this.runId++
         this.isCalculating = false
         this.parsedResult = null
         this.calculationError = null
         this.shouldAbort = false
-        wasmManager.terminate()
+        this.abort()
     }
 }
 

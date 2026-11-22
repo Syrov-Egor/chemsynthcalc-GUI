@@ -12,19 +12,19 @@ export interface ControlInput {
     maxCombinations: number;
 }
 
-// The complete payload posted to the calculation worker.
+// The complete payload sent to the native calculation service.
 export type CalculationParams = ControlInput & { equation: string };
 
-// One row of the masses-mode result table. These names mirror the fields set
-// by resultToJS in src/lib/wasm/app.go.
+// One row of the masses-mode result table. These names mirror the JSON tags
+// in app.go.
 export interface TabularData {
     formula: string;
     molar: number;
     masses: number;
 }
 
-// The shape returned by the Go calculation and passed between the worker and
-// the UI. It is validated at the worker boundary before use.
+// The shape returned by the Go calculation and passed to the UI. `tabular` is
+// normalized to an array by the calculation manager.
 export interface CalculationResult {
     success: boolean;
     message: string;

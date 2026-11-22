@@ -32,9 +32,7 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.js",
-    "src/**/*.svelte"
-  ],
-  "exclude": [
-    "src/lib/wasm/wasm_exec.js"
+    "src/**/*.svelte",
+    "bindings"
   ]
 }

@@ -1,5 +1,3 @@
-//go:build js && wasm
-
 package main
 
 import (
@@ -12,7 +10,7 @@ import (
 )
 
 func errorousCalculation(message string) CalculationResult {
-	return CalculationResult{Success: false, Message: message, Details: ""}
+	return CalculationResult{Success: false, Message: message, Details: "", Tabular: []TabularData{}}
 }
 
 func calcFormulaMode(ctx context.Context, params *CalculationParams) CalculationResult {
@@ -29,7 +27,7 @@ func calcFormulaMode(ctx context.Context, params *CalculationParams) Calculation
 			return errorousCalculation(err.Error())
 		}
 		out := form.Output(uint(params.OutputPrecision)).String()
-		return CalculationResult{Success: true, Message: "", Details: out}
+		return CalculationResult{Success: true, Message: "", Details: out, Tabular: []TabularData{}}
 	} else {
 		formula, oxides, err := parseCustomOxides(params.Equation)
 		if err != nil {
@@ -49,7 +47,7 @@ func calcFormulaMode(ctx context.Context, params *CalculationParams) Calculation
 		var output strings.Builder
 		output.WriteString(out)
 		fmt.Fprintf(&output, "\ncustom oxide percent: %v", customOxides)
-		return CalculationResult{Success: true, Message: "", Details: output.String()}
+		return CalculationResult{Success: true, Message: "", Details: output.String(), Tabular: []TabularData{}}
 	}
 }
 
@@ -196,7 +194,7 @@ func calcBalanceMode(ctx context.Context, params *CalculationParams) Calculation
 	fmt.Fprintf(&output, "Coefficients: %v \n", calcResult)
 	fmt.Fprintf(&output, "Final reaction: %s \n", finalReaction)
 
-	return CalculationResult{Success: true, Message: "", Details: output.String()}
+	return CalculationResult{Success: true, Message: "", Details: output.String(), Tabular: []TabularData{}}
 }
 
 func calcMassesMode(ctx context.Context, params *CalculationParams) CalculationResult {

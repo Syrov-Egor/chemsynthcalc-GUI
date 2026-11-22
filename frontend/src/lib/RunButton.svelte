@@ -2,7 +2,6 @@
     import { Button } from "$lib/components/ui/button/index.js";
     import { cn } from "$lib/utils.js";
     import { calculationManager } from "./scripts/buttonRun.svelte";
-    import { wasmManager } from "./scripts/wasm.svelte";
     import type { ControlInput } from "$lib/types";
 
     let {
@@ -42,7 +41,4 @@
     <span id="button-text">
         {calculationManager.isCalculating ? "Stop" : "Run"}
     </span>
-    {#if wasmManager.isLoading}
-        <span class="loading-indicator">(Loading WASM...)</span>
-    {/if}
 </Button>

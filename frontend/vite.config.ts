@@ -6,12 +6,10 @@ import { defineConfig, type Plugin } from 'vite';
 
 // Content-Security-Policy for the deployed site. It is injected only into the
 // production index.html (see cspPlugin) because Vite's dev server relies on
-// inline styles for HMR. 'wasm-unsafe-eval' allows WebAssembly compilation
-// without allowing JavaScript eval; the TinyGo glue is imported as a module.
+// inline styles for HMR.
 const contentSecurityPolicy = [
   "default-src 'self'",
-  "script-src 'self' 'wasm-unsafe-eval'",
-  "worker-src 'self'",
+  "script-src 'self'",
   "connect-src 'self'",
   "img-src 'self' data:",
   "font-src 'self'",

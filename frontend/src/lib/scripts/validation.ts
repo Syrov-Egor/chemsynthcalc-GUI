@@ -14,8 +14,7 @@ export const FLOAT_TOLERANCE_MAX = 15;
 
 // Upper bound for the brute-force "comb" algorithm, which enumerates
 // maxCombinations ** compounds coefficient sets. Keep this small enough that a
-// request cannot spend minutes (or far longer) searching. The calculation
-// timeout in wasm.svelte.ts remains the hard stop for expensive searches.
+// request cannot spend minutes (or far longer) searching.
 export const MAX_COMBINATIONS_MIN = 1;
 export const MAX_COMBINATIONS_MAX = 1000;
 
@@ -155,9 +154,9 @@ export function validateControlInput(input: ControlInput): ValidationIssue[] {
     return issues;
 }
 
-// Validates everything that is posted to the calculation worker. The equation
-// is included so an empty or whitespace-only input is rejected before the
-// request reaches WASM.
+// Validates everything that is sent to the native calculation service. The
+// equation is included so an empty or whitespace-only input is rejected before
+// the request reaches Go.
 export function validateCalculationParams(
     params: CalculationParams
 ): ValidationResult {
