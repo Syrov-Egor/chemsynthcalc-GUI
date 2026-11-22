@@ -1,12 +1,20 @@
 <script lang="ts">
     import QuestionIcon from "@lucide/svelte/icons/circle-question-mark";
     import DownloadIcon from "@lucide/svelte/icons/download";
+    import FileIcon from "@lucide/svelte/icons/file";
+    import FileSpreadsheetIcon from "@lucide/svelte/icons/file-spreadsheet";
+    import FileTextIcon from "@lucide/svelte/icons/file-text";
+    import FolderOpenIcon from "@lucide/svelte/icons/folder-open";
     import GithubIcon from "@lucide/svelte/icons/git-compare";
+    import LogOutIcon from "@lucide/svelte/icons/log-out";
     import MenuIcon from "@lucide/svelte/icons/menu";
+    import SaveIcon from "@lucide/svelte/icons/save";
     import SunIcon from "@lucide/svelte/icons/sun";
+    import TableIcon from "@lucide/svelte/icons/table";
     import MoonIcon from "@lucide/svelte/icons/moon";
     import { toggleMode } from "mode-watcher";
     import { Button } from "$lib/components/ui/button/index.js";
+    import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
     import * as Sheet from "$lib/components/ui/sheet/index.js";
     import { version } from "./../../package.json" with { type: "json" };
 
@@ -40,6 +48,59 @@
     >
         chemsynthcalc v{version}
     </span>
+{/snippet}
+
+{#snippet fileMenu(mobile = false)}
+    <DropdownMenu.Root>
+        <DropdownMenu.Trigger>
+            {#snippet child({ props })}
+                <Button
+                    {...props}
+                    variant="ghost"
+                    size={mobile ? "default" : "sm"}
+                    class={mobile ? "w-full justify-start" : undefined}
+                >
+                    <FileIcon class="size-4" />
+                    File...
+                </Button>
+            {/snippet}
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Content align="start" class="w-48">
+            <DropdownMenu.Item>
+                <FolderOpenIcon class="size-4" />
+                Open...
+            </DropdownMenu.Item>
+            <DropdownMenu.Item>
+                <SaveIcon class="size-4" />
+                Save...
+            </DropdownMenu.Item>
+            <DropdownMenu.Sub>
+                <DropdownMenu.SubTrigger>
+                    <DownloadIcon class="size-4" />
+                    Export as
+                </DropdownMenu.SubTrigger>
+                <DropdownMenu.SubContent>
+                    <DropdownMenu.Item>
+                        <FileTextIcon class="size-4" />
+                        .txt
+                    </DropdownMenu.Item>
+                    <DropdownMenu.Item>
+                        <TableIcon class="size-4" />
+                        .csv
+                    </DropdownMenu.Item>
+                    <DropdownMenu.Item>
+                        <FileSpreadsheetIcon class="size-4" />
+                        .xlsx
+                    </DropdownMenu.Item>
+                </DropdownMenu.SubContent>
+            </DropdownMenu.Sub>
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item>
+                <LogOutIcon class="size-4" />
+                Exit
+            </DropdownMenu.Item>
+        </DropdownMenu.Content>
+    </DropdownMenu.Root>
 {/snippet}
 
 {#snippet navLink(link: (typeof links)[number], mobile = false)}
@@ -104,6 +165,7 @@
                     </Sheet.Header>
                     <ul class="flex flex-col gap-1 px-4">
                         <li>{@render versionLabel()}</li>
+                        <li>{@render fileMenu(true)}</li>
                         {#each links as link (link.href)}
                             <li>{@render navLink(link, true)}</li>
                         {/each}
@@ -116,6 +178,7 @@
         <!-- Desktop: inline links -->
         <ul class="hidden items-center gap-1 md:flex">
             <li>{@render versionLabel()}</li>
+            <li>{@render fileMenu()}</li>
             {#each links as link (link.href)}
                 <li>{@render navLink(link)}</li>
             {/each}
