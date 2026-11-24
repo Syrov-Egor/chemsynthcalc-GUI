@@ -61,7 +61,7 @@
                     class={mobile ? "w-full justify-start" : undefined}
                 >
                     <FileIcon class="size-4" />
-                    File...
+                    File
                 </Button>
             {/snippet}
         </DropdownMenu.Trigger>
