@@ -16,7 +16,7 @@
     <Label for="floatTolerance">
         <span>
             Float Tolerance (1×10<sup
-                class="relative -top-[0.45em] align-baseline text-[0.7em] leading-none"
+                class="relative top-[-0.45em] align-baseline text-[0.7em] leading-none"
                 >−x</sup
             >)
         </span>

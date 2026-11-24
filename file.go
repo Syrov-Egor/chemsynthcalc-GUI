@@ -314,7 +314,6 @@ func (a *App) exportToXLSX(state AppState) error {
 	return f.SaveAs(filePath)
 }
 
-// Quit closes the application.
 func (a *App) Quit() {
 	if app := application.Get(); app != nil {
 		app.Quit()
