@@ -7,6 +7,7 @@ export {
 };
 
 export type {
+    AppState,
     CalculationParams,
     CalculationResult,
     TabularData

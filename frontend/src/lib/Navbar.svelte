@@ -13,10 +13,24 @@
     import TableIcon from "@lucide/svelte/icons/table";
     import MoonIcon from "@lucide/svelte/icons/moon";
     import { toggleMode } from "mode-watcher";
+    import { App } from "../../bindings/chemsynthcalc";
     import { Button } from "$lib/components/ui/button/index.js";
     import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
     import * as Sheet from "$lib/components/ui/sheet/index.js";
+    import { calculationManager } from "./scripts/buttonRun.svelte";
+    import { fromAppState, toAppState } from "./scripts/appState";
+    import type { ControlInput } from "./types";
     import { version } from "./../../package.json" with { type: "json" };
+
+    interface NavbarProps {
+        textInput?: string;
+        controlInput: ControlInput;
+    }
+
+    let {
+        textInput = $bindable(""),
+        controlInput = $bindable(),
+    }: NavbarProps = $props();
 
     const links = [
         {
@@ -40,6 +54,85 @@
     let hash = $state(window.location.hash || "#home");
 
     const isActive = (href: string) => hash === href;
+
+    function isDialogCancellation(error: unknown): boolean {
+        const message = (
+            error instanceof Error ? error.message : String(error)
+        )
+            .trim()
+            .toLowerCase();
+        return (
+            message === "cancelled" ||
+            message === "canceled" ||
+            message.includes("cancelled by user") ||
+            message.includes("canceled by user")
+        );
+    }
+
+    function reportFileError(action: string, error: unknown) {
+        // Closing a file dialog is a normal outcome, not an error to report.
+        if (isDialogCancellation(error)) return;
+
+        const message = error instanceof Error ? error.message : String(error);
+        console.error(`Failed to ${action}:`, error);
+        window.alert(`Failed to ${action}: ${message}`);
+    }
+
+    async function openState() {
+        try {
+            const state = await App.LoadState();
+            if (!state) return; // User cancelled the dialog
+
+            const loaded = fromAppState(state);
+
+            // Stop any running calculation before replacing the whole state.
+            calculationManager.reset();
+            textInput = loaded.textInput;
+            controlInput = loaded.controlInput;
+            calculationManager.parsedResult = loaded.parsedResult;
+            calculationManager.calculationError = loaded.calculationError;
+        } catch (error) {
+            reportFileError("open the saved state", error);
+        }
+    }
+
+    async function saveState() {
+        const state = toAppState(
+            textInput,
+            controlInput,
+            calculationManager.parsedResult,
+            calculationManager.calculationError,
+            calculationManager.isCalculating,
+        );
+
+        try {
+            await App.SaveState(state);
+        } catch (error) {
+            reportFileError("save the state", error);
+        }
+    }
+
+    async function exportData(format: "txt" | "csv" | "xlsx") {
+        const state = toAppState(
+            textInput,
+            controlInput,
+            calculationManager.parsedResult,
+            calculationManager.calculationError,
+            calculationManager.isCalculating,
+        );
+
+        try {
+            await App.Export(state, format);
+        } catch (error) {
+            reportFileError(`export to ${format}`, error);
+        }
+    }
+
+    function exitApp() {
+        App.Quit().catch((error: unknown) => {
+            reportFileError("quit the application", error);
+        });
+    }
 </script>
 
 {#snippet versionLabel()}
@@ -66,11 +159,11 @@
             {/snippet}
         </DropdownMenu.Trigger>
         <DropdownMenu.Content align="start" class="w-48">
-            <DropdownMenu.Item>
+            <DropdownMenu.Item onclick={openState}>
                 <FolderOpenIcon class="size-4" />
                 Open...
             </DropdownMenu.Item>
-            <DropdownMenu.Item>
+            <DropdownMenu.Item onclick={saveState}>
                 <SaveIcon class="size-4" />
                 Save...
             </DropdownMenu.Item>
@@ -80,22 +173,22 @@
                     Export as
                 </DropdownMenu.SubTrigger>
                 <DropdownMenu.SubContent>
-                    <DropdownMenu.Item>
+                    <DropdownMenu.Item onclick={() => exportData("txt")}>
                         <FileTextIcon class="size-4" />
                         .txt
                     </DropdownMenu.Item>
-                    <DropdownMenu.Item>
+                    <DropdownMenu.Item onclick={() => exportData("csv")}>
                         <TableIcon class="size-4" />
                         .csv
                     </DropdownMenu.Item>
-                    <DropdownMenu.Item>
+                    <DropdownMenu.Item onclick={() => exportData("xlsx")}>
                         <FileSpreadsheetIcon class="size-4" />
                         .xlsx
                     </DropdownMenu.Item>
                 </DropdownMenu.SubContent>
             </DropdownMenu.Sub>
             <DropdownMenu.Separator />
-            <DropdownMenu.Item>
+            <DropdownMenu.Item onclick={exitApp}>
                 <LogOutIcon class="size-4" />
                 Exit
             </DropdownMenu.Item>

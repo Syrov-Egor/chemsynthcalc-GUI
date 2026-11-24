@@ -63,7 +63,7 @@
 
 <div>
   <ModeWatcher />
-  <Navbar />
+  <Navbar bind:textInput bind:controlInput />
   <InputGroup bind:textInput bind:controlInput />
   <Results {controlInput} />
 </div>

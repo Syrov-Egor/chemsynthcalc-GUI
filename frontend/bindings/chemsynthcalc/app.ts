@@ -16,10 +16,25 @@ import { Call as $Call, CancellablePromise as $CancellablePromise } from "@wails
 import * as $models from "./models.js";
 
 /**
+ * Export writes the calculated data in the requested format.
+ */
+export function Export(state: $models.AppState, format: string): $CancellablePromise<void> {
+    return $Call.ByID(1718700699, state, format);
+}
+
+/**
  * IsCalculating reports whether a calculation is currently running.
  */
 export function IsCalculating(): $CancellablePromise<boolean> {
     return $Call.ByID(3700040592);
+}
+
+/**
+ * LoadState asks for a state file and returns its contents. A nil state and a
+ * nil error means the user cancelled the dialog.
+ */
+export function LoadState(): $CancellablePromise<$models.AppState | null> {
+    return $Call.ByID(3556934338);
 }
 
 /**
@@ -29,6 +44,20 @@ export function IsCalculating(): $CancellablePromise<boolean> {
  */
 export function PerformCalculation(params: $models.CalculationParams): $CancellablePromise<$models.CalculationResult> {
     return $Call.ByID(1971480871, params);
+}
+
+/**
+ * Quit closes the application.
+ */
+export function Quit(): $CancellablePromise<void> {
+    return $Call.ByID(3181047470);
+}
+
+/**
+ * SaveState asks for a destination and writes the state as indented JSON.
+ */
+export function SaveState(state: $models.AppState): $CancellablePromise<void> {
+    return $Call.ByID(2941707333, state);
 }
 
 /**
