@@ -352,8 +352,7 @@
         <item name="android:windowBackground">@color/wails_background</item>
         
         <item name="android:windowSplashScreenBackground">@color/wails_background</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
-        <item name="android:windowSplashScreenIconBackgroundColor">@color/white</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_screen_icon</item>
     </style>
     <style name="ThemeOverlay.Material3.DynamicColors.Dark" parent="">
     <item name="isMaterial3DynamicColorApplied">true</item>

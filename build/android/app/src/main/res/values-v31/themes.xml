@@ -10,9 +10,14 @@
         <item name="android:navigationBarColor">@color/wails_background</item>
         <!-- Window background -->
         <item name="android:windowBackground">@color/wails_background</item>
-        <!-- Android 12+ system splash screen -->
+        <!-- Android 12+ system splash screen.
+             Use the high-res splash artwork instead of the launcher icon: the
+             system masks the outer third of the icon, and the small launcher
+             PNG got upscaled (blurry) and cropped by that mask. The drawable
+             is pre-padded with extra margin so the circular logo stays fully
+             visible whether the mask is circular or square.
+             No icon background: the artwork already includes its white circle. -->
         <item name="android:windowSplashScreenBackground">@color/wails_background</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
-        <item name="android:windowSplashScreenIconBackgroundColor">@color/white</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_screen_icon</item>
     </style>
 </resources>

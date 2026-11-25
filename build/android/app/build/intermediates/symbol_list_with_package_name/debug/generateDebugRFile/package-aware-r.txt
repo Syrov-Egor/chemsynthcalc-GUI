@@ -5,6 +5,7 @@ color wails_blue
 color wails_blue_dark
 color white
 drawable splash_logo
+drawable splash_screen_icon
 id main_container
 id splash
 id webview

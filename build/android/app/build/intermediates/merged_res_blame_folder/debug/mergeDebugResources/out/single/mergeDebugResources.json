@@ -1,54 +1,62 @@
 [
     {
-        "merged": "com.wails.app-debug-33:/drawable-nodpi_splash_logo.png.flat",
-        "source": "com.wails.app-main-35:/drawable-nodpi/splash_logo.png"
+        "merged": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-debug-33:/mipmap-hdpi_ic_launcher.png.flat",
+        "source": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-main-35:/mipmap-hdpi/ic_launcher.png"
     },
     {
-        "merged": "com.wails.app-debug-33:/layout_activity_main.xml.flat",
-        "source": "com.wails.app-main-35:/layout/activity_main.xml"
+        "merged": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-debug-33:/mipmap-mdpi_ic_launcher.png.flat",
+        "source": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-main-35:/mipmap-mdpi/ic_launcher.png"
     },
     {
-        "merged": "com.wails.app-debug-33:/mipmap-xhdpi_ic_launcher_round.png.flat",
-        "source": "com.wails.app-main-35:/mipmap-xhdpi/ic_launcher_round.png"
+        "merged": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-debug-33:/xml_file_paths.xml.flat",
+        "source": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-main-35:/xml/file_paths.xml"
     },
     {
-        "merged": "com.wails.app-debug-33:/xml_file_paths.xml.flat",
-        "source": "com.wails.app-main-35:/xml/file_paths.xml"
+        "merged": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-debug-33:/mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-main-35:/mipmap-xxxhdpi/ic_launcher.png"
     },
     {
-        "merged": "com.wails.app-debug-33:/mipmap-hdpi_ic_launcher.png.flat",
-        "source": "com.wails.app-main-35:/mipmap-hdpi/ic_launcher.png"
+        "merged": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-debug-33:/mipmap-xhdpi_ic_launcher_round.png.flat",
+        "source": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-main-35:/mipmap-xhdpi/ic_launcher_round.png"
     },
     {
-        "merged": "com.wails.app-debug-33:/mipmap-mdpi_ic_launcher.png.flat",
-        "source": "com.wails.app-main-35:/mipmap-mdpi/ic_launcher.png"
+        "merged": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-debug-33:/mipmap-hdpi_ic_launcher_round.png.flat",
+        "source": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-main-35:/mipmap-hdpi/ic_launcher_round.png"
     },
     {
-        "merged": "com.wails.app-debug-33:/mipmap-xhdpi_ic_launcher.png.flat",
-        "source": "com.wails.app-main-35:/mipmap-xhdpi/ic_launcher.png"
+        "merged": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-debug-33:/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-main-35:/mipmap-xxhdpi/ic_launcher.png"
     },
     {
-        "merged": "com.wails.app-debug-33:/mipmap-xxhdpi_ic_launcher.png.flat",
-        "source": "com.wails.app-main-35:/mipmap-xxhdpi/ic_launcher.png"
+        "merged": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-debug-33:/mipmap-xxhdpi_ic_launcher_round.png.flat",
+        "source": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-main-35:/mipmap-xxhdpi/ic_launcher_round.png"
     },
     {
-        "merged": "com.wails.app-debug-33:/mipmap-mdpi_ic_launcher_round.png.flat",
-        "source": "com.wails.app-main-35:/mipmap-mdpi/ic_launcher_round.png"
+        "merged": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-debug-33:/mipmap-xxxhdpi_ic_launcher_round.png.flat",
+        "source": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-main-35:/mipmap-xxxhdpi/ic_launcher_round.png"
     },
     {
-        "merged": "com.wails.app-debug-33:/mipmap-xxhdpi_ic_launcher_round.png.flat",
-        "source": "com.wails.app-main-35:/mipmap-xxhdpi/ic_launcher_round.png"
+        "merged": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-debug-33:/drawable-nodpi_splash_logo.png.flat",
+        "source": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-main-35:/drawable-nodpi/splash_logo.png"
     },
     {
-        "merged": "com.wails.app-debug-33:/mipmap-xxxhdpi_ic_launcher_round.png.flat",
-        "source": "com.wails.app-main-35:/mipmap-xxxhdpi/ic_launcher_round.png"
+        "merged": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-debug-33:/drawable-nodpi_splash_screen_icon.png.flat",
+        "source": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-main-35:/drawable-nodpi/splash_screen_icon.png"
     },
     {
-        "merged": "com.wails.app-debug-33:/mipmap-xxxhdpi_ic_launcher.png.flat",
-        "source": "com.wails.app-main-35:/mipmap-xxxhdpi/ic_launcher.png"
+        "merged": "com.wails.app-debug-33:/drawable-nodpi_splash_screen_icon.png.flat",
+        "source": "com.wails.app-main-35:/drawable-nodpi/splash_screen_icon.png"
     },
     {
-        "merged": "com.wails.app-debug-33:/mipmap-hdpi_ic_launcher_round.png.flat",
-        "source": "com.wails.app-main-35:/mipmap-hdpi/ic_launcher_round.png"
+        "merged": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-debug-33:/layout_activity_main.xml.flat",
+        "source": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-main-35:/layout/activity_main.xml"
+    },
+    {
+        "merged": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-debug-33:/mipmap-mdpi_ic_launcher_round.png.flat",
+        "source": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-main-35:/mipmap-mdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-debug-33:/mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "/home/egor/.gradle/daemon/9.2.1/com.wails.app-main-35:/mipmap-xhdpi/ic_launcher.png"
     }
 ]
