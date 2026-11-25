@@ -1,0 +1,363 @@
+name: Release
+
+# A release is cut by pushing a tag such as v1.0.0rc1.
+# The tag must point to a commit that is already on main; see RELEASING.md.
+on:
+  push:
+    tags:
+      - 'v*'
+  # Build-only run: produces the workflow artifacts but does not create a release.
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  APP_NAME: chemsynthcalc
+  WAILS_VERSION: v3.1.0
+  # Tag name for releases; "manual" for workflow_dispatch test builds so that
+  # branch names containing "/" cannot break artifact file names.
+  RELEASE_NAME: ${{ github.ref_type == 'tag' && github.ref_name || 'manual' }}
+
+jobs:
+  # Fail fast if the tag is malformed or was created from a branch other than main.
+  verify-tag:
+    name: Verify tag is on main
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Skip tag checks for manual runs
+        if: github.event_name != 'push'
+        run: 'echo "Manual run: tag checks skipped."'
+
+      - uses: actions/checkout@v4
+        if: github.event_name == 'push'
+        with:
+          fetch-depth: 0
+
+      - name: Check tag format
+        if: github.event_name == 'push'
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          if [[ ! "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-]?(alpha|beta|rc)([.-]?[0-9]+)?)?$ ]]; then
+            echo "::error::Tag '$tag' is not a supported release tag."
+            echo "Expected something like v1.2.3, v1.2.3rc1, v1.2.3-rc1, or v1.2.3-beta.2."
+            exit 1
+          fi
+
+      - name: Check tag commit is an ancestor of main
+        if: github.event_name == 'push'
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+          tag_commit="$(git rev-list -n 1 "${GITHUB_REF_NAME}")"
+          if ! git merge-base --is-ancestor "$tag_commit" origin/main; then
+            echo "::error::Tag ${GITHUB_REF_NAME} points to ${tag_commit}, which is not on main."
+            echo "Merge your changes into main first, then move the tag."
+            exit 1
+          fi
+          echo "Tag ${GITHUB_REF_NAME} (${tag_commit}) is on main."
+
+  windows:
+    name: Windows ${{ matrix.label }}
+    needs: verify-tag
+    runs-on: windows-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            label: x86-64
+          - arch: arm64
+            label: arm64
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: frontend/.node-version
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Wails 3 CLI
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@${{ env.WAILS_VERSION }}
+
+      - name: Build Windows ${{ matrix.label }}
+        run: wails3 build GOOS=windows GOARCH=${{ matrix.arch }}
+
+      - name: Rename artifact
+        shell: pwsh
+        run: |
+          $src = "bin/${{ env.APP_NAME }}.exe"
+          $dest = "${{ env.APP_NAME }}-${{ env.RELEASE_NAME }}-windows-${{ matrix.label }}.exe"
+          if (-not (Test-Path $src)) { throw "Missing build output: $src" }
+          Move-Item -LiteralPath $src -Destination $dest
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-${{ matrix.label }}
+          path: ${{ env.APP_NAME }}-*-windows-${{ matrix.label }}.exe
+          if-no-files-found: error
+          retention-days: 7
+
+  linux:
+    name: Linux AppImage
+    needs: verify-tag
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: frontend/.node-version
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # Wails v3.1 uses GTK4 + WebKitGTK 6.0 by default. Ubuntu 24.04 is the
+      # oldest LTS that ships those development packages.
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            dpkg-dev \
+            pkg-config \
+            patchelf \
+            libgtk-4-dev \
+            libwebkitgtk-6.0-dev \
+            libfuse2t64
+
+      - name: Install Wails 3 CLI
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@${{ env.WAILS_VERSION }}
+
+      - name: Build AppImage
+        run: wails3 task linux:create:appimage
+
+      - name: Rename artifact
+        run: |
+          set -euo pipefail
+          appimage="$(find bin -maxdepth 1 -type f -name '*.AppImage' -print -quit)"
+          if [[ -z "$appimage" ]]; then
+            echo "::error::No AppImage was produced"
+            ls -la bin || true
+            exit 1
+          fi
+          dest="${APP_NAME}-${RELEASE_NAME}-linux-x86-64.AppImage"
+          mv "$appimage" "$dest"
+          chmod +x "$dest"
+          file "$dest" || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-x86-64
+          path: ${{ env.APP_NAME }}-*-linux-x86-64.AppImage
+          if-no-files-found: error
+          retention-days: 7
+
+  macos:
+    name: macOS universal
+    needs: verify-tag
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: frontend/.node-version
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Wails 3 CLI
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@${{ env.WAILS_VERSION }}
+
+      - name: Build universal macOS app
+        run: wails3 task darwin:package:universal
+
+      - name: Verify universal binary and create zip
+        run: |
+          set -euo pipefail
+          app="bin/${APP_NAME}.app"
+          binary="$app/Contents/MacOS/${APP_NAME}"
+          test -d "$app"
+          test -f "$binary"
+
+          archs="$(lipo -archs "$binary")"
+          echo "Architectures in universal binary: $archs"
+          if [[ "$archs" != *x86_64* || "$archs" != *arm64* ]]; then
+            echo "::error::Expected a universal binary with x86_64 and arm64, got: $archs"
+            exit 1
+          fi
+
+          dest="${APP_NAME}-${RELEASE_NAME}-macos-universal.zip"
+          ditto -c -k --sequesterRsrc --keepParent "$app" "$dest"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-universal
+          path: ${{ env.APP_NAME }}-*-macos-universal.zip
+          if-no-files-found: error
+          retention-days: 7
+
+  android:
+    name: Android universal APK
+    needs: verify-tag
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      # Optional. If this secret is set, the APK is signed with a real release
+      # keystore instead of the throwaway debug keystore.
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: frontend/.node-version
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Android SDK and NDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0 ndk;29.0.14206865'
+
+      - name: Point the build at the NDK
+        run: |
+          sdk_root="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          echo "ANDROID_NDK_HOME=$sdk_root/ndk/29.0.14206865" >> "$GITHUB_ENV"
+
+      - name: Configure Android release signing
+        if: env.ANDROID_KEYSTORE_BASE64 != ''
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          keystore="$RUNNER_TEMP/release.keystore"
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$keystore"
+          {
+            echo "ANDROID_KEYSTORE_FILE=$keystore"
+            echo "ANDROID_KEYSTORE_PASSWORD=$ANDROID_KEYSTORE_PASSWORD"
+            echo "ANDROID_KEY_ALIAS=$ANDROID_KEY_ALIAS"
+            echo "ANDROID_KEY_PASSWORD=$ANDROID_KEY_PASSWORD"
+          } >> "$GITHUB_ENV"
+
+      - name: Install Wails 3 CLI
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@${{ env.WAILS_VERSION }}
+
+      # The repository currently tracks some Android build outputs (including
+      # the generated overlay, which contains absolute paths). Start clean so
+      # the release is built from this checkout, not from stale artifacts.
+      - name: Clean Android build outputs
+        run: wails3 task android:clean
+
+      - name: Generate Android overlay for this checkout
+        run: wails3 android overlay:gen -out build/android/overlay.json -config build/config.yml
+
+      - name: Build universal APK (arm64 + x86_64)
+        run: wails3 task android:package:fat
+
+      - name: Rename artifact and verify ABIs
+        run: |
+          set -euo pipefail
+          apk="bin/${APP_NAME}.apk"
+          test -f "$apk"
+          dest="${APP_NAME}-${RELEASE_NAME}-android-universal.apk"
+          mv "$apk" "$dest"
+
+          unzip -l "$dest" | grep -q 'lib/arm64-v8a/libwails.so'
+          unzip -l "$dest" | grep -q 'lib/x86_64/libwails.so'
+          echo "APK contains arm64-v8a and x86_64 native libraries."
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-universal
+          path: ${{ env.APP_NAME }}-*-android-universal.apk
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    name: Create or update GitHub release
+    # Manual workflow_dispatch runs are build-only.
+    if: github.event_name == 'push'
+    needs: [windows, linux, macos, android]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Generate checksums
+        run: |
+          set -euo pipefail
+          cd dist
+          ls -l
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      # Creates the release as a draft so the notes can be written before it
+      # goes public. If a release for this tag already exists (for example one
+      # you created manually with notes), its assets are replaced in place and
+      # its draft/published state and notes are left alone.
+      - name: Create or update draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ env.RELEASE_NAME }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists; uploading assets."
+            gh release upload "$TAG" dist/* --clobber
+          else
+            prerelease=()
+            case "$TAG" in
+              *alpha*|*beta*|*rc*) prerelease=(--prerelease) ;;
+            esac
+            gh release create "$TAG" dist/* \
+              --draft \
+              --title "$TAG" \
+              --notes "Release notes pending." \
+              "${prerelease[@]}"
+          fi
