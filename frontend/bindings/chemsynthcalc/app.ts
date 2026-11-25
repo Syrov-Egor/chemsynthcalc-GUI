@@ -46,9 +46,6 @@ export function PerformCalculation(params: $models.CalculationParams): $Cancella
     return $Call.ByID(1971480871, params);
 }
 
-/**
- * Quit closes the application.
- */
 export function Quit(): $CancellablePromise<void> {
     return $Call.ByID(3181047470);
 }

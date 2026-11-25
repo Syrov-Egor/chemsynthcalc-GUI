@@ -22,6 +22,7 @@ import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.util.Base64;
 import android.util.Log;
+import android.view.View;
 import android.webkit.ConsoleMessage;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -60,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int FILE_PICKER_REQUEST = 7001;
 
     private WebView webView;
+    private View splashView;
     private Uri devServer;
     private WailsBridge bridge;
     // Battery: system-event receivers are registered only while the activity is
@@ -94,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        splashView = findViewById(R.id.splash);
 
         String devURL = WailsBridge.devServerURL(this);
         if (devURL != null) devServer = Uri.parse(devURL);
@@ -226,6 +229,15 @@ public class MainActivity extends AppCompatActivity {
                 // Now that JS listeners are mounted, push a snapshot of the
                 // current battery / network / theme so the UI starts populated.
                 emitSystemSnapshot();
+
+                // Hide the splash screen once the UI has painted.
+                if (splashView != null && splashView.getVisibility() == View.VISIBLE) {
+                    splashView.animate()
+                            .alpha(0f)
+                            .setDuration(200)
+                            .withEndAction(() -> splashView.setVisibility(View.GONE))
+                            .start();
+                }
             }
         });
 

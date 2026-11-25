@@ -1,0 +1,5 @@
+{
+  "Replace": {
+    "/home/egor/programming/chemsynthcalc-GUI/main_android.gen.go": "/home/egor/programming/chemsynthcalc-GUI/build/android/gen/main_android.gen.go"
+  }
+}

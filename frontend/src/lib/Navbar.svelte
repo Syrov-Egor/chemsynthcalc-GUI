@@ -13,6 +13,8 @@
     import TableIcon from "@lucide/svelte/icons/table";
     import MoonIcon from "@lucide/svelte/icons/moon";
     import { toggleMode } from "mode-watcher";
+    import { onMount } from "svelte";
+    import { System } from "@wailsio/runtime";
     import { App } from "../../bindings/chemsynthcalc";
     import { Button } from "$lib/components/ui/button/index.js";
     import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
@@ -44,7 +46,7 @@
             icon: DownloadIcon,
         },
         {
-            href: "https://github.com/Syrov-Egor/chemsynthcalc-web",
+            href: "https://github.com/Syrov-Egor/chemsynthcalc-GUI",
             label: "Source code",
             icon: GithubIcon,
         },
@@ -52,6 +54,32 @@
 
     let open = $state(false);
     let hash = $state(window.location.hash || "#home");
+
+    // File dialogs are only implemented on desktop. Start with the synchronous
+    // helper, then refresh from the backend: Windows injects
+    // window._wails.environment after the page loads, so the sync helper is
+    // false there when this component is created.
+    let showFileMenu = $state(System.IsDesktop());
+
+    onMount(() => {
+        let cancelled = false;
+
+        System.Environment()
+            .then((environment) => {
+                if (cancelled) return;
+                showFileMenu = ["windows", "linux", "darwin"].includes(
+                    environment.OS,
+                );
+            })
+            .catch(() => {
+                // No Go backend (e.g. browser preview): no file dialogs.
+                showFileMenu = false;
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    });
 
     const isActive = (href: string) => hash === href;
 
@@ -258,7 +286,9 @@
                     </Sheet.Header>
                     <ul class="flex flex-col gap-1 px-4">
                         <li>{@render versionLabel()}</li>
-                        <li>{@render fileMenu(true)}</li>
+                        {#if showFileMenu}
+                            <li>{@render fileMenu(true)}</li>
+                        {/if}
                         {#each links as link (link.href)}
                             <li>{@render navLink(link, true)}</li>
                         {/each}
@@ -271,7 +301,9 @@
         <!-- Desktop: inline links -->
         <ul class="hidden items-center gap-1 md:flex">
             <li>{@render versionLabel()}</li>
-            <li>{@render fileMenu()}</li>
+            {#if showFileMenu}
+                <li>{@render fileMenu()}</li>
+            {/if}
             {#each links as link (link.href)}
                 <li>{@render navLink(link)}</li>
             {/each}
