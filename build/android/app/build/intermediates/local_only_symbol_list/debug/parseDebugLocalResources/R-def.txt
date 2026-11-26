@@ -1,0 +1,18 @@
+R_DEF: Internal format may change without notice
+local
+color black
+color wails_background
+color wails_blue
+color wails_blue_dark
+color white
+drawable splash_logo
+drawable splash_screen_icon
+id main_container
+id splash
+id webview
+layout activity_main
+mipmap ic_launcher
+mipmap ic_launcher_round
+string app_name
+style Theme.WailsApp
+xml file_paths

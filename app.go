@@ -2,168 +2,37 @@ package main
 
 import (
 	"context"
-	"encoding/csv"
-	"encoding/json"
+	"errors"
 	"fmt"
-	"os"
-	"strconv"
+	"math"
 	"strings"
 	"sync"
-	"time"
-
-	"github.com/wailsapp/wails/v2/pkg/runtime"
-	"github.com/xuri/excelize/v2"
 )
 
-const PERMISSION os.FileMode = 0644
-
+// App is the Wails service that exposes the calculation logic to the
+// frontend. All calculation work runs natively in the application process.
 type App struct {
-	ctx           context.Context
 	cancelFunc    context.CancelFunc
 	cancelMutex   sync.RWMutex
 	isCalculating bool
 }
 
-type AppState struct {
-	Equation        string        `json:"equation"`
-	Mode            string        `json:"mode"`
-	Algorithm       string        `json:"algorithm"`
-	RunMode         string        `json:"runMode"`
-	TargetNum       int           `json:"targetNum"`
-	TargetMass      float64       `json:"targetMass"`
-	Intify          bool          `json:"intify"`
-	OutputPrecision int           `json:"outputPrecision"`
-	FloatTolerance  int           `json:"floatTolerance"`
-	MaxComb         int           `json:"maxComb"`
-	Results         string        `json:"results"`
-	SpoilerOpen     bool          `json:"spoilerOpen"`
-	Status          string        `json:"status"`
-	StatusMessage   string        `json:"statusMessage"`
-	Tabular         []TabularData `json:"tabular,omitempty"`
-}
-
-func (a *App) SaveState(state AppState) error {
-	defaultFilename := generateFilename("json", state)
-	filePath, err := runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
-		Title: "Save State",
-		Filters: []runtime.FileFilter{
-			{DisplayName: "JSON Files", Pattern: "*.json"},
-		},
-		DefaultFilename:  defaultFilename,
-		DefaultDirectory: ".",
-	})
-	if err != nil {
-		return err
-	}
-	if filePath == "" {
-		return nil // User cancelled
-	}
-
-	if filePath[len(filePath)-5:] != ".json" {
-		filePath += ".json"
-	}
-
-	if state.Mode == "" {
-		state.Mode = "masses" // Default mode
-	}
-	if state.Algorithm == "" {
-		state.Algorithm = "auto"
-	}
-	if state.RunMode == "" {
-		state.RunMode = "balance"
-	}
-	if state.Results == "" {
-		state.Results = "Ready"
-	}
-	if state.Status == "" {
-		state.Status = "w-3 h-3 bg-gray-500 rounded-full"
-		state.StatusMessage = "Ready"
-	}
-
-	data, err := json.MarshalIndent(state, "", "  ")
-	if err != nil {
-		return err
-	}
-
-	return os.WriteFile(filePath, data, PERMISSION)
-}
-
-func generateFilename(extension string, state AppState) string {
-	defaultFilename := "CSC_Untitled_" + time.Now().Format("20060102_150405") + "." + extension
-	if state.Equation != "" {
-		sanitizedEq := sanitizeEquation(state.Equation)
-		if sanitizedEq != "" {
-			defaultFilename = "CSC_" + state.Mode + "_" + sanitizedEq + "_" + time.Now().Format("20060102_150405") + "." + extension
-		}
-	}
-	return defaultFilename
-}
-
-func sanitizeEquation(equation string) string {
-	sanitized := strings.Map(func(r rune) rune {
-		switch {
-		case r >= 'a' && r <= 'z':
-			return r
-		case r >= 'A' && r <= 'Z':
-			return r
-		case r >= '0' && r <= '9':
-			return r
-		case r == '+', r == '=', r == '-', r == '_':
-			return r
-		default:
-			return -1
-		}
-	}, equation)
-
-	if len(sanitized) > 200 {
-		sanitized = sanitized[:200]
-	}
-
-	if sanitized == "" {
-		return "Equation"
-	}
-
-	return sanitized
-}
-
-func (a *App) LoadState() (AppState, error) {
-	filePath, err := runtime.OpenFileDialog(a.ctx, runtime.OpenDialogOptions{
-		Title: "Load State",
-		Filters: []runtime.FileFilter{
-			{DisplayName: "JSON Files", Pattern: "*.json"},
-		},
-		DefaultDirectory: ".",
-	})
-	if err != nil {
-		return AppState{}, err
-	}
-	if filePath == "" {
-		return AppState{}, nil // User cancelled
-	}
-
-	data, err := os.ReadFile(filePath)
-	if err != nil {
-		return AppState{}, err
-	}
-
-	var state AppState
-	err = json.Unmarshal(data, &state)
-	return state, err
-}
-
+// CalculationParams describes a single calculation request. The JSON tags
+// match the object sent by the frontend.
 type CalculationParams struct {
-	Equation        string  `json:"equation"`
 	Mode            string  `json:"mode"`
 	Algorithm       string  `json:"algorithm"`
 	RunMode         string  `json:"runMode"`
-	TargetNum       int     `json:"targetNum"`
+	TargetNum       int     `json:"targetNumber"`
 	TargetMass      float64 `json:"targetMass"`
 	Intify          bool    `json:"intify"`
 	OutputPrecision int     `json:"outputPrecision"`
 	FloatTolerance  int     `json:"floatTolerance"`
-	MaxComb         int     `json:"maxComb"`
+	MaxComb         int     `json:"maxCombinations"`
+	Equation        string  `json:"equation"`
 }
 
+// CalculationResult is returned by PerformCalculation.
 type CalculationResult struct {
 	Success   bool          `json:"success"`
 	Message   string        `json:"message"`
@@ -172,20 +41,85 @@ type CalculationResult struct {
 	Tabular   []TabularData `json:"tabular"`
 }
 
+// TabularData is one row of the masses-mode result table.
 type TabularData struct {
 	Formula string  `json:"formula"`
 	Molar   float64 `json:"molar"`
 	Masses  float64 `json:"masses"`
 }
 
+// Limits mirror src/lib/scripts/validation.ts. They are enforced again here
+// because bound Wails methods can be reached without going through the Svelte
+// UI. This keeps a negative precision from wrapping to uint and prevents an
+// unbounded brute-force search.
+const (
+	minOutputPrecision = 0
+	maxOutputPrecision = 15
+
+	minFloatTolerance = 0
+	maxFloatTolerance = 15
+
+	minMaxCombinations = 1
+	maxMaxCombinations = 1000
+
+	minTargetNumber = -100
+	maxTargetNumber = 100
+)
+
+// NewApp creates a new calculation service.
 func NewApp() *App {
 	return &App{}
 }
 
-func (a *App) startup(ctx context.Context) {
-	a.ctx = ctx
+func validateParams(p CalculationParams) error {
+	if strings.TrimSpace(p.Equation) == "" {
+		return errors.New("enter a formula or equation")
+	}
+
+	switch p.Mode {
+	case "formula":
+		// Algorithm, run mode and max coefficient are not used in this mode.
+	case "balance":
+		switch p.Algorithm {
+		case "auto", "inv", "gpinv", "ppinv":
+		case "comb":
+			if p.MaxComb < minMaxCombinations || p.MaxComb > maxMaxCombinations {
+				return fmt.Errorf("max coefficient must be between %d and %d", minMaxCombinations, maxMaxCombinations)
+			}
+		default:
+			return fmt.Errorf("invalid balancing algorithm %q", p.Algorithm)
+		}
+	case "masses":
+		switch p.RunMode {
+		case "balance", "check", "force":
+		default:
+			return fmt.Errorf("invalid run mode %q", p.RunMode)
+		}
+	default:
+		return fmt.Errorf("invalid calculation mode %q", p.Mode)
+	}
+
+	if p.OutputPrecision < minOutputPrecision || p.OutputPrecision > maxOutputPrecision {
+		return fmt.Errorf("output precision must be between %d and %d", minOutputPrecision, maxOutputPrecision)
+	}
+
+	if p.FloatTolerance < minFloatTolerance || p.FloatTolerance > maxFloatTolerance {
+		return fmt.Errorf("float tolerance must be between %d and %d", minFloatTolerance, maxFloatTolerance)
+	}
+
+	if p.TargetNum < minTargetNumber || p.TargetNum > maxTargetNumber {
+		return fmt.Errorf("target number must be between %d and %d", minTargetNumber, maxTargetNumber)
+	}
+
+	if math.IsNaN(p.TargetMass) || math.IsInf(p.TargetMass, 0) || p.TargetMass < 0 {
+		return errors.New("target mass must be a non-negative finite number")
+	}
+
+	return nil
 }
 
+// StopCalculation requests cancellation of the calculation currently running,
+// if any. It is safe to call when no calculation is in progress.
 func (a *App) StopCalculation() {
 	a.cancelMutex.Lock()
 	defer a.cancelMutex.Unlock()
@@ -195,20 +129,50 @@ func (a *App) StopCalculation() {
 	}
 }
 
+// IsCalculating reports whether a calculation is currently running.
 func (a *App) IsCalculating() bool {
 	a.cancelMutex.RLock()
 	defer a.cancelMutex.RUnlock()
 	return a.isCalculating
 }
 
-func (a *App) PerformCalculation(params CalculationParams) CalculationResult {
+// PerformCalculation validates the request and runs the selected calculation.
+// Wails injects ctx into the bound method, so cancelling the frontend call (or
+// calling StopCalculation) stops cooperative calculations such as Comb.
+func (a *App) PerformCalculation(ctx context.Context, params CalculationParams) (result CalculationResult) {
+	// A panic in a calculation must not escape into the Wails runtime. Turn it
+	// into a normal failure result so the UI can report it.
+	defer func() {
+		if r := recover(); r != nil {
+			result = errorousCalculation(fmt.Sprintf("Calculation panicked: %v", r))
+		}
+	}()
+
+	if err := validateParams(params); err != nil {
+		return errorousCalculation(err.Error())
+	}
+
 	a.cancelMutex.Lock()
-	ctx, cancel := context.WithCancel(context.Background())
+
+	// Only one calculation may run at a time.
+	if a.isCalculating {
+		a.cancelMutex.Unlock()
+		return CalculationResult{
+			Success: false,
+			Message: "Another calculation is already in progress",
+			Details: "",
+			Tabular: []TabularData{},
+		}
+	}
+
+	ctx, cancel := context.WithCancel(ctx)
 	a.cancelFunc = cancel
 	a.isCalculating = true
 	a.cancelMutex.Unlock()
 
 	defer func() {
+		cancel()
+
 		a.cancelMutex.Lock()
 		a.cancelFunc = nil
 		a.isCalculating = false
@@ -223,174 +187,6 @@ func (a *App) PerformCalculation(params CalculationParams) CalculationResult {
 	case "masses":
 		return calcMassesMode(ctx, &params)
 	default:
-		return CalculationResult{}
+		return errorousCalculation(fmt.Sprintf("invalid calculation mode %q", params.Mode))
 	}
-}
-
-func (a *App) Export(state AppState, format string) error {
-	var err error
-	switch format {
-	case "txt":
-		err = a.exportToTXT(state)
-		if err != nil {
-			return err
-		}
-	case "csv":
-		err = a.exportToCSV(state)
-		if err != nil {
-			return err
-		}
-	case "xlsx":
-		err = a.exportToXLSX(state)
-		if err != nil {
-			return err
-		}
-	default:
-		return fmt.Errorf("wrong file format %s", format)
-	}
-	return nil
-}
-
-func (a *App) exportToTXT(state AppState) error {
-	defaultFilename := generateFilename("txt", state)
-	filePath, err := runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
-		Title: "Export to TXT",
-		Filters: []runtime.FileFilter{
-			{DisplayName: "Text files", Pattern: "*.txt"},
-		},
-		DefaultDirectory: ".",
-		DefaultFilename:  defaultFilename,
-	})
-	if err != nil {
-		return err
-	}
-	if filePath == "" {
-		return nil // User cancelled
-	}
-
-	if !strings.HasSuffix(filePath, ".txt") {
-		filePath += ".txt"
-	}
-
-	var res CalculationResult
-
-	err = json.Unmarshal([]byte(state.Results), &res)
-	if err != nil {
-		return err
-	}
-	data := []byte(res.Details)
-	return os.WriteFile(filePath, data, PERMISSION)
-}
-
-func (a *App) exportToCSV(state AppState) error {
-	defaultFilename := generateFilename("csv", state)
-	filePath, err := runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
-		Title: "Export to CSV",
-		Filters: []runtime.FileFilter{
-			{DisplayName: "Comma separated values files", Pattern: "*.csv"},
-		},
-		DefaultDirectory: ".",
-		DefaultFilename:  defaultFilename,
-	})
-	if err != nil {
-		return err
-	}
-	if filePath == "" {
-		return nil // User cancelled
-	}
-
-	if !strings.HasSuffix(filePath, ".csv") {
-		filePath += ".csv"
-	}
-
-	file, err := os.Create(filePath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	writer := csv.NewWriter(file)
-	defer writer.Flush()
-
-	header := []string{"Formula", "Molar Mass", "Mass"}
-	if err := writer.Write(header); err != nil {
-		return err
-	}
-
-	for _, row := range state.Tabular {
-		record := []string{
-			row.Formula,
-			strconv.FormatFloat(row.Molar, 'f', -1, 64),
-			strconv.FormatFloat(row.Masses, 'f', -1, 64),
-		}
-		if err := writer.Write(record); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (a *App) exportToXLSX(state AppState) error {
-	defaultFilename := generateFilename("xlsx", state)
-	filePath, err := runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
-		Title: "Export to XLSX",
-		Filters: []runtime.FileFilter{
-			{DisplayName: "Excel files", Pattern: "*.xlsx"},
-		},
-		DefaultDirectory: ".",
-		DefaultFilename:  defaultFilename,
-	})
-	if err != nil {
-		return err
-	}
-	if filePath == "" {
-		return nil
-	}
-
-	if !strings.HasSuffix(filePath, ".xlsx") {
-		filePath += ".xlsx"
-	}
-
-	f := excelize.NewFile()
-	defer f.Close()
-
-	sheetName := "Sheet1"
-
-	headers := []string{"Formula", "Molar Mass", "Mass"}
-	for i, header := range headers {
-		cell := fmt.Sprintf("%s1", string(rune('A'+i)))
-		if err := f.SetCellValue(sheetName, cell, header); err != nil {
-			return err
-		}
-	}
-
-	for i, row := range state.Tabular {
-		rowNum := i + 2 // Start from row 2 (after headers)
-
-		if err := f.SetCellValue(sheetName, fmt.Sprintf("A%d", rowNum), row.Formula); err != nil {
-			return err
-		}
-		if err := f.SetCellValue(sheetName, fmt.Sprintf("B%d", rowNum), row.Molar); err != nil {
-			return err
-		}
-		if err := f.SetCellValue(sheetName, fmt.Sprintf("C%d", rowNum), row.Masses); err != nil {
-			return err
-		}
-	}
-
-	if err := f.SaveAs(filePath); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (a *App) ShowMessageDialog(title, message, buttonText string) (string, error) {
-	return runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
-		Title:   title,
-		Message: message,
-		Buttons: []string{buttonText},
-		Icon:    icon,
-	})
 }

@@ -4,14 +4,13 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"regexp"
 	"strings"
 
 	g "github.com/Syrov-Egor/gosynthcalc"
 )
 
 func errorousCalculation(message string) CalculationResult {
-	return CalculationResult{Success: false, Message: message, Details: ""}
+	return CalculationResult{Success: false, Message: message, Details: "", Tabular: []TabularData{}}
 }
 
 func calcFormulaMode(ctx context.Context, params *CalculationParams) CalculationResult {
@@ -28,7 +27,7 @@ func calcFormulaMode(ctx context.Context, params *CalculationParams) Calculation
 			return errorousCalculation(err.Error())
 		}
 		out := form.Output(uint(params.OutputPrecision)).String()
-		return CalculationResult{Success: true, Message: "", Details: out}
+		return CalculationResult{Success: true, Message: "", Details: out, Tabular: []TabularData{}}
 	} else {
 		formula, oxides, err := parseCustomOxides(params.Equation)
 		if err != nil {
@@ -47,8 +46,8 @@ func calcFormulaMode(ctx context.Context, params *CalculationParams) Calculation
 
 		var output strings.Builder
 		output.WriteString(out)
-		output.WriteString(fmt.Sprintf("\ncustom oxide percent: %v", customOxides))
-		return CalculationResult{Success: true, Message: "", Details: output.String()}
+		fmt.Fprintf(&output, "\ncustom oxide percent: %v", customOxides)
+		return CalculationResult{Success: true, Message: "", Details: output.String(), Tabular: []TabularData{}}
 	}
 }
 
@@ -60,11 +59,8 @@ func parseCustomOxides(input string) (formula string, oxides []string, err error
 	}
 	formulaStr := split[0]
 	oxidesStr := split[1]
-	allowedSymbols := regexp.MustCompile(`[^a-zA-Z0-9.,]`)
-	invalid := allowedSymbols.FindAllString(oxidesStr, -1)
-	if len(invalid) > 0 {
-		return "", nil, fmt.Errorf("there are invalid symbols in custoom oxides: %v", invalid)
-	}
+	// Custom oxides are validated by gosynthcalc itself (chemical formula
+	// parsing), so no symbol check is duplicated here.
 	parsed := strings.Split(oxidesStr, ",")
 
 	return formulaStr, parsed, nil
@@ -81,7 +77,7 @@ func calcBalanceMode(ctx context.Context, params *CalculationParams) Calculation
 	reacOpts := g.ReactionOptions{
 		Rmode:      g.Balance,
 		Target:     params.TargetNum,
-		TargerMass: params.TargetMass,
+		TargetMass: params.TargetMass,
 		Intify:     params.Intify,
 		Precision:  8,
 		Tolerance:  sciFloat(params.FloatTolerance),
@@ -116,26 +112,43 @@ func calcBalanceMode(ctx context.Context, params *CalculationParams) Calculation
 		calcResult = auto.Result
 		method = auto.Method
 	case "inv":
+		select {
+		case <-ctx.Done():
+			return CalculationResult{Success: false, Message: "Calculation cancelled", Details: "", Cancelled: true}
+		default:
+		}
+
 		calcResult, err = bal.Inv()
 		if err != nil {
 			return errorousCalculation(err.Error())
 		}
 		method = "Inv"
 	case "gpinv":
+		select {
+		case <-ctx.Done():
+			return CalculationResult{Success: false, Message: "Calculation cancelled", Details: "", Cancelled: true}
+		default:
+		}
+
 		calcResult, err = bal.GPinv()
 		if err != nil {
 			return errorousCalculation(err.Error())
 		}
 		method = "GPinv"
 	case "ppinv":
+		select {
+		case <-ctx.Done():
+			return CalculationResult{Success: false, Message: "Calculation cancelled", Details: "", Cancelled: true}
+		default:
+		}
+
 		calcResult, err = bal.PPinv()
 		if err != nil {
 			return errorousCalculation(err.Error())
 		}
 		method = "PPinv"
 	case "comb":
-		// For the long-running comb algorithm, we need to run it in a goroutine
-		// and check for cancellation
+		// This already handles context properly
 		resultChan := make(chan []float64, 1)
 		errorChan := make(chan error, 1)
 
@@ -148,7 +161,6 @@ func calcBalanceMode(ctx context.Context, params *CalculationParams) Calculation
 			resultChan <- result
 		}()
 
-		// Wait for either result or cancellation
 		select {
 		case <-ctx.Done():
 			return CalculationResult{Success: false, Message: "Calculation cancelled", Details: "", Cancelled: true}
@@ -160,7 +172,6 @@ func calcBalanceMode(ctx context.Context, params *CalculationParams) Calculation
 		}
 	}
 
-	// Check for cancellation before final processing
 	select {
 	case <-ctx.Done():
 		return CalculationResult{Success: false, Message: "Calculation cancelled", Details: "", Cancelled: true}
@@ -179,11 +190,11 @@ func calcBalanceMode(ctx context.Context, params *CalculationParams) Calculation
 
 	var output strings.Builder
 
-	output.WriteString(fmt.Sprintf("Method: %s \n", method))
-	output.WriteString(fmt.Sprintf("Coefficients: %v \n", calcResult))
-	output.WriteString(fmt.Sprintf("Final reaction: %s \n", finalReaction))
+	fmt.Fprintf(&output, "Method: %s \n", method)
+	fmt.Fprintf(&output, "Coefficients: %v \n", calcResult)
+	fmt.Fprintf(&output, "Final reaction: %s \n", finalReaction)
 
-	return CalculationResult{Success: true, Message: "", Details: output.String()}
+	return CalculationResult{Success: true, Message: "", Details: output.String(), Tabular: []TabularData{}}
 }
 
 func calcMassesMode(ctx context.Context, params *CalculationParams) CalculationResult {
@@ -207,7 +218,7 @@ func calcMassesMode(ctx context.Context, params *CalculationParams) CalculationR
 	reacOpts := g.ReactionOptions{
 		Rmode:      rmode,
 		Target:     params.TargetNum,
-		TargerMass: params.TargetMass,
+		TargetMass: params.TargetMass,
 		Intify:     params.Intify,
 		Precision:  8,
 		Tolerance:  sciFloat(params.FloatTolerance),
