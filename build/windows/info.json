@@ -8,10 +8,10 @@
 			"FileVersion": "1.0.0",
 			"ProductVersion": "1.0.0",
 			"CompanyName": "Egor Syrov",
-			"FileDescription": "A chemsynthcalc application",
-			"LegalCopyright": "© 2026, Egor Syrov",
+			"FileDescription": "Chemical synthesis calculator",
+			"LegalCopyright": "(c) 2026, Egor Syrov",
 			"ProductName": "chemsynthcalc",
-			"Comments": "A chemsynthcalc GUI application made with Wails"
+			"Comments": "Chemical synthesis calculator"
 		}
 	}
 }
