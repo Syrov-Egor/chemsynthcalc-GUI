@@ -5,17 +5,17 @@ A desktop GUI app for calculating the masses of substances required for chemical
 ## Download the binary
 The app in available for Windows 10/11, Linux, MacOS and Andoird. See [releases](https://github.com/Syrov-Egor/chemsynthcalc-GUI/releases).
 
-**Warning** The code for all compiled applications is unsigned, so they will not work out of the box without warning on any system. See the [releases](https://github.com/Syrov-Egor/chemsynthcalc-GUI/releases) page for detailed instructions.
+**Warning**: The code for all compiled applications is unsigned, so they will not work out of the box without warning on any system. See the [releases](https://github.com/Syrov-Egor/chemsynthcalc-GUI/releases) page for detailed instructions.
 
 ## How to use
-See [GitHub Wiki](https://github.com/Syrov-Egor/chemsynthcalc-GUI/wiki) for instructions.
+See [GitHub Wiki](https://github.com/Syrov-Egor/chemsynthcalc-GUI/wiki/How-to-use) for instructions.
 
 ## Build it yourself
 This app is using [Wails](https://wails.io/). To build:
-1. [Install Wails](https://wails.io/docs/gettingstarted/installation). 
+1. [Install Wails](https://wails.io/quick-start/installation/). 
 2. Run `wails doctor` to check if all dependencies are installed.
 3. `git clone` this repo and `cd` into the directory.
-4. Run `wails build` with specific flags (see [reference](https://wails.io/docs/reference/cli)).
+4. Run `wails build` with specific flags (see [reference](https://wails.io/guides/build/building/)).
 5. Your executable will be in /bin dir.
 
 ## License
